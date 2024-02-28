@@ -401,6 +401,7 @@ int main(int argc, char** argv)
 
     fw_test_thread = thread(measure_fw_latency, input_fd);
 
+    cout << "iteration,click_time,start_time,end_time,bright_time,yalmd_latency" << endl;
 
     while(measuring)
     {
@@ -434,6 +435,16 @@ int main(int argc, char** argv)
 	    int sum_latency = input_latency + framework_latency + display_latency;
 	    int yalmd_latency = atoi(serial_read_buffer);
 
+	    cout << iteration << ","
+		 << click_time << ","
+		 << start_time << ","
+		 << end_time << ","
+		 << bright_time << ","
+		 << yalmd_latency
+		 << endl;
+
+	    iteration++;
+	    /*
 	    //cout << "read is non-blocking" << endl;
 	    //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
 	    cout << "-------------" << endl;
@@ -444,6 +455,7 @@ int main(int argc, char** argv)
 	    //cout << "sum latency:       " << sum_latency << endl;
 	    cout << "yalmd:             " << yalmd_latency << endl;
 	    cout << "error:             " << ete_latency - yalmd_latency << endl;
+	    */
     }
 
     //printLog();
