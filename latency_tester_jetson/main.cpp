@@ -17,6 +17,8 @@
 #include <cstring>
 #include <termios.h>
 #include <cerrno>
+#include <ctime>
+#include <cstdlib>
 
 using namespace std;
 
@@ -25,6 +27,8 @@ using namespace std;
 #define HEIGHT 1
 int X = 200;
 int Y = 200;
+
+int ITERATIONS = 100;
 
 // colors used by the test program
 #define COLOR_WHITE 0xFFFFFFFF
@@ -232,7 +236,13 @@ void measure_fw_latency(int input_fd)
     while(measuring)
     {
         // read input events from the specified device
+	// take 3 - 4 microseconds
         err = read(input_fd, &inputEvent, sizeof(struct input_event));
+
+        //uint64_t before = micros();
+        //uint64_t after = micros();
+	//float delta = (after - before) / 1000.0f;
+	//if (delta != 0) cout << delta << endl;
 
         // detected a left mouse click
         if( err > -1 &&
@@ -303,34 +313,38 @@ int main(int argc, char** argv)
     signal(SIGINT, signalHandlerInt);
     signal(SIGTERM, signalHandlerTerm);
 
+    srand(time(nullptr));
+
     // variables used by evdev to get input events
     int input_fd = -1;
     char* event_handle; // path to /dev/input/eventXY for the used input device
 
     // check command line parameters
-    if(argc < 3)
+    if(argc < 4)
     {
         cerr << "Too few arguments!" << endl
-             << "Usage: latency_tester INPUT_DEVICE PROGRAM_NAME" << endl
+             << "Usage: latency_tester INPUT_DEVICE PROGRAM_NAME ITERATIONS" << endl
              << "INPUT_DEVICE: path to /dev/input/eventXY" << endl
-             << "PROGRAM_NAME: name of program under test to appear in log files" << endl;
+             << "PROGRAM_NAME: name of program under test to appear in log files" << endl
+             << "ITERATIONS: number of iterations" << endl;
         exit(SIGABRT);
     }
     else
     {
         event_handle = argv[1];
         testProgramName = argv[2];
+	ITERATIONS = atoi(argv[3]);
     }
 
-    if(argc == 5)
+    if(argc == 6)
     {
-        X = atoi(argv[3]);
-        Y = atoi(argv[4]);
+        X = atoi(argv[4]);
+        Y = atoi(argv[5]);
     }
 
     int iteration = 0;
 
-    cout << "init XShm" << endl;
+    //cout << "init XShm" << endl;
     initXShm();
 
     //while(true)
@@ -357,8 +371,8 @@ int main(int argc, char** argv)
     GPIO::setup(click_pin, GPIO::IN);
     GPIO::setup(bright_pin, GPIO::IN);
 
-    GPIO::add_event_detect(click_pin, GPIO::Edge::RISING, trigger_click); // , 10)
-    GPIO::add_event_detect(bright_pin, GPIO::Edge::RISING, trigger_bright);
+    GPIO::add_event_detect(click_pin, GPIO::Edge::RISING, trigger_click, 0); // , 10)
+    GPIO::add_event_detect(bright_pin, GPIO::Edge::RISING, trigger_bright, 0);
 
     serial_port = init_serial_port();
 
@@ -376,11 +390,11 @@ int main(int argc, char** argv)
     write(serial_port, msg_calibrate, 1);
     memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
 
-    cout << "buffer size" << sizeof(serial_read_buffer) << endl;
+    //cout << "buffer size" << sizeof(serial_read_buffer) << endl;
 
     do {
     	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-	cout << serial_read_buffer;
+	//cout << serial_read_buffer;
     } while (serial_read_num_bytes <= 0);
 
     // TODO: fix this using poll() or select()
@@ -388,12 +402,12 @@ int main(int argc, char** argv)
     serial_read_num_bytes = 0;
     do {
     	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-	cout << serial_read_buffer;
+	//cout << serial_read_buffer;
     } while (serial_read_num_bytes <= 0);
 
     //cout << "num bytes received: " << serial_read_num_bytes << endl;
     //cout << "calibration: " << serial_read_buffer << endl;
-    cout << endl << "calibration finished" << endl;
+    //cout << endl << "calibration finished" << endl;
 
     usleep(2 * 1000 * 1000);
     
@@ -444,6 +458,8 @@ int main(int argc, char** argv)
 		 << endl;
 
 	    iteration++;
+
+	    if (iteration > ITERATIONS) break;
 	    /*
 	    //cout << "read is non-blocking" << endl;
 	    //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
@@ -456,6 +472,9 @@ int main(int argc, char** argv)
 	    cout << "yalmd:             " << yalmd_latency << endl;
 	    cout << "error:             " << ete_latency - yalmd_latency << endl;
 	    */
+
+	    //usleep((rand() / RAND_MAX) * 1000 * 1000);
+	    usleep(200 * 1000);
     }
 
     //printLog();
