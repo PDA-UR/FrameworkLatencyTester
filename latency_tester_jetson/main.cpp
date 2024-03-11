@@ -19,8 +19,14 @@
 #include <cerrno>
 #include <ctime>
 #include <cstdlib>
+#include <GL/gl.h>
+#include <GL/glx.h>
 
 using namespace std;
+
+// Function pointer for glXGetVideoSyncSGI
+typedef int (*GLXGETVIDEOSYNCSGIPROC)(unsigned int *);
+GLXGETVIDEOSYNCSGIPROC glXGetVideoSyncSGI;
 
 // position and dimension (should only one pixel!) of the region observed by XShm
 #define WIDTH 1
@@ -72,8 +78,15 @@ uint64_t start_time;
 uint64_t click_time;
 uint64_t end_time;
 uint64_t bright_time;
+uint64_t vsync_time[1000];
+uint64_t vsync_count = 0;
+uint64_t xshm_start_time;
+uint64_t xshm_end_time;
+
+bool measure_vblank = 0;
 
 thread fw_test_thread;
+thread measure_vblank_thread;
 
 struct termios tty;
 int serial_port;
@@ -115,6 +128,36 @@ uint64_t micros()
     return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
+void initGLX()
+{
+    Display *glxDisplay = XOpenDisplay(NULL);
+    if (!glxDisplay) {
+        cout << "Error: Unable to open X display." << endl;
+	return;
+    }
+
+    int default_screen_id = DefaultScreen(glxDisplay);
+    Window glxRoot = RootWindow(glxDisplay, default_screen_id);
+
+    // Create GLX context
+    static int visual_attribs[] = {
+        GLX_RGBA,
+        GLX_DOUBLEBUFFER,
+        None
+    };
+    XVisualInfo *visual = glXChooseVisual(glxDisplay, default_screen_id, visual_attribs);
+    GLXContext context = glXCreateContext(glxDisplay, visual, NULL, GL_TRUE);
+    glXMakeCurrent(glxDisplay, glxRoot, context);
+
+    // Load GLX_SGI_video_sync extension
+    glXGetVideoSyncSGI = 
+        (GLXGETVIDEOSYNCSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXGetVideoSyncSGI");
+    if (!glXGetVideoSyncSGI) {
+        cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
+        return;
+    }
+}
+
 // initialize the XShm extension to be able to read one pixel from the screen
 void initXShm()
 {
@@ -134,7 +177,37 @@ void initXShm()
     shminfo.readOnly = False;
     XShmAttach(display, &shminfo);
 
+
+    return;
     //cout << "shmid: " << shminfo.shmid << endl;
+    //
+    //
+
+    // Create GLX context
+    static int visual_attribs[] = {
+        GLX_RGBA,
+        GLX_DOUBLEBUFFER,
+        None
+    };
+    if (!display) {
+        cout << "Error: Unable to open X display." << endl;
+	return;
+    }
+    int default_screen_id = DefaultScreen(display);
+    cout << "screen id: " << default_screen_id << endl;
+    cout << "screen pointer: " << &screen << endl;
+    //Window glxRoot = RootWindow(display, default_screen_id);
+    XVisualInfo *visual = glXChooseVisual(display, default_screen_id, visual_attribs);
+    GLXContext context = glXCreateContext(display, visual, NULL, GL_TRUE);
+    glXMakeCurrent(display, rootWindow, context);
+
+    // Load GLX_SGI_video_sync extension
+    glXGetVideoSyncSGI = 
+        (GLXGETVIDEOSYNCSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXGetVideoSyncSGI");
+    if (!glXGetVideoSyncSGI) {
+        cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
+        return;
+    }
 }
 
 // detach XShm and clean up memory
@@ -183,10 +256,24 @@ unsigned int getPixelColorX()
 // wait until our pixel has a specified color
 void wait_for_color(unsigned int color)
 {
+	unsigned int pixelColor;
+	uint64_t start, end;
     //cout << getPixelColorX() << " " << color << endl;
-    while(getPixelColor() == 0) // != color
+    //while(getPixelColor() == 0) // != color
     //while(getPixelColorX() != color)
+    while(1)
     {
+	start = micros();
+	pixelColor = getPixelColor();
+	end = micros();
+
+	if (pixelColor != 0)
+	{
+		xshm_start_time = start;
+		xshm_end_time = end;
+		return;
+	}
+	
         usleep(1);
     }
     return;
@@ -200,6 +287,7 @@ void cleanup()
     closeXShm();
     GPIO::cleanup();
     fw_test_thread.join();
+    measure_vblank_thread.join();
 }
 
 // make sure we clean up and print current logs when the program is killed
@@ -251,6 +339,11 @@ void measure_fw_latency(int input_fd)
             inputEvent.value == CLICKED)
         {
             start_time = micros();
+
+	    measure_vblank = 1;
+
+	    //measure_vblank = 1;
+
             //logEvent(micros(), EVENT_TYPE_CLICK_EVDEV, iteration); // log input event timestamp
             wait_for_color(COLOR_WHITE); // wait for test program to react
             //wait_for_color(255); // wait for test program to react
@@ -265,6 +358,70 @@ void measure_fw_latency(int input_fd)
         // does not seem to change anything
         //usleep(10);
     }
+}
+
+void get_vblanks()
+{
+	initGLX();
+	/*
+    Display *glxDisplay = XOpenDisplay(NULL);
+    if (!glxDisplay) {
+        cout << "Error: Unable to open X display." << endl;
+	return;
+    }
+
+    int default_screen_id = DefaultScreen(glxDisplay);
+    Window glxRoot = RootWindow(glxDisplay, default_screen_id);
+
+    // Create GLX context
+    static int visual_attribs[] = {
+        GLX_RGBA,
+        GLX_DOUBLEBUFFER,
+        None
+    };
+    XVisualInfo *visual = glXChooseVisual(glxDisplay, default_screen_id, visual_attribs);
+    GLXContext context = glXCreateContext(glxDisplay, visual, NULL, GL_TRUE);
+    glXMakeCurrent(glxDisplay, glxRoot, context);
+
+    // Load GLX_SGI_video_sync extension
+    glXGetVideoSyncSGI = 
+        (GLXGETVIDEOSYNCSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXGetVideoSyncSGI");
+    if (!glXGetVideoSyncSGI) {
+        cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
+        return;
+    }
+    */
+	//cout << "start measure vblank" << endl;
+	unsigned int last_sync_count = 0;
+	uint64_t last_vblank_time = micros();
+
+	while(measuring)
+	{
+		unsigned int sync_count;
+		glXGetVideoSyncSGI(&sync_count);
+
+		//cout << sync_count << endl;
+
+		if (sync_count != last_sync_count)
+		{
+			uint64_t new_vblank_time = micros();
+			last_sync_count = sync_count;
+
+			//cout << "sync" << endl;
+
+			if (measure_vblank == 1)
+			{
+				//cout << "log" << endl;
+				vsync_time[vsync_count] = new_vblank_time;			
+				vsync_count++;
+			}
+		}
+
+		// Sleep for a short time to prevent busy waiting
+		usleep(10);
+	}
+
+	//cout << "end measure vblank" << endl;
 }
 
 int init_serial_port()
@@ -347,6 +504,7 @@ int main(int argc, char** argv)
     //cout << "init XShm" << endl;
     initXShm();
 
+
     //while(true)
     //{
     //        logEvent(micros(), EVENT_TYPE_CLICK_EVDEV, iteration); // log input event timestamp
@@ -385,7 +543,11 @@ int main(int argc, char** argv)
     char serial_read_buffer[128];
     int serial_read_num_bytes = 0;
 
-    usleep(3 * 1000 * 1000);
+    usleep(2 * 1000 * 1000);
+    write(serial_port, msg_toggle, 1);
+    usleep(500 * 1000);
+    write(serial_port, msg_toggle, 1);
+    usleep(500 * 1000);
 
     write(serial_port, msg_calibrate, 1);
     memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
@@ -415,7 +577,14 @@ int main(int argc, char** argv)
 
     fw_test_thread = thread(measure_fw_latency, input_fd);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,yalmd_latency" << endl;
+    usleep(100 * 1000);
+
+    measure_vblank = 0;
+    measure_vblank_thread = thread(get_vblanks);
+
+    usleep(100 * 1000);
+
+    cout << "iteration,click_time,start_time,end_time,bright_time,xshm_start_time,xshm_end_time,yalmd_latency,vblanks" << endl;
 
     while(measuring)
     {
@@ -433,6 +602,8 @@ int main(int argc, char** argv)
 		usleep(10);
 	    }
 	    //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
+
+	    measure_vblank = 0;
 	    
 	    serial_read_num_bytes = 0;
 	    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
@@ -454,8 +625,19 @@ int main(int argc, char** argv)
 		 << start_time << ","
 		 << end_time << ","
 		 << bright_time << ","
-		 << yalmd_latency
-		 << endl;
+		 << xshm_start_time << ","
+		 << xshm_end_time << ","
+		 << yalmd_latency << ",";
+
+		for (int i = 0; i < vsync_count; i++)
+		{
+			cout << vsync_time[i] << ";";
+			vsync_time[i] = 0;
+		}
+
+		cout << endl;
+
+		vsync_count = 0;
 
 	    iteration++;
 
