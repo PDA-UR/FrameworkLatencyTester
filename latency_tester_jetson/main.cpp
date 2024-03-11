@@ -176,38 +176,6 @@ void initXShm()
     shminfo.shmaddr = image->data = (char*)shmat(shminfo.shmid, 0, 0);
     shminfo.readOnly = False;
     XShmAttach(display, &shminfo);
-
-
-    return;
-    //cout << "shmid: " << shminfo.shmid << endl;
-    //
-    //
-
-    // Create GLX context
-    static int visual_attribs[] = {
-        GLX_RGBA,
-        GLX_DOUBLEBUFFER,
-        None
-    };
-    if (!display) {
-        cout << "Error: Unable to open X display." << endl;
-	return;
-    }
-    int default_screen_id = DefaultScreen(display);
-    cout << "screen id: " << default_screen_id << endl;
-    cout << "screen pointer: " << &screen << endl;
-    //Window glxRoot = RootWindow(display, default_screen_id);
-    XVisualInfo *visual = glXChooseVisual(display, default_screen_id, visual_attribs);
-    GLXContext context = glXCreateContext(display, visual, NULL, GL_TRUE);
-    glXMakeCurrent(display, rootWindow, context);
-
-    // Load GLX_SGI_video_sync extension
-    glXGetVideoSyncSGI = 
-        (GLXGETVIDEOSYNCSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXGetVideoSyncSGI");
-    if (!glXGetVideoSyncSGI) {
-        cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
-        return;
-    }
 }
 
 // detach XShm and clean up memory
@@ -221,15 +189,7 @@ void closeXShm()
 // get pixel at specified position with XShm
 unsigned int getPixelColor()
 {
-    //uint64_t start_time = micros();
-
-    //cout << "get image" << endl;
     auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
-    //cout << "result " << result << endl;
-    //cout << "got image " << dec << image->data[2] << " yay" << endl;
-
-    //uint64_t end_time = micros();
-    //cout << end_time - start_time << endl;
 
     return image->data[2]; // red channel is enough for us
 }
@@ -247,9 +207,6 @@ unsigned int getPixelColorX()
 
     XQueryColor (display, XDefaultColormap(display, XDefaultScreen (display)), &c);
 
-    //cout << c.red/256 << " " << c.green/256 << " " << c.blue/256 << "\n";
-    //cout << c.red / 256 << endl;
-
     return c.red / 256;
 }
 
@@ -258,25 +215,23 @@ void wait_for_color(unsigned int color)
 {
 	unsigned int pixelColor;
 	uint64_t start, end;
-    //cout << getPixelColorX() << " " << color << endl;
-    //while(getPixelColor() == 0) // != color
-    //while(getPixelColorX() != color)
-    while(1)
-    {
-	start = micros();
-	pixelColor = getPixelColor();
-	end = micros();
 
-	if (pixelColor != 0)
+	while(1)
 	{
-		xshm_start_time = start;
-		xshm_end_time = end;
-		return;
+		start = micros();
+		pixelColor = getPixelColor();
+		end = micros();
+
+		if (pixelColor != 0)
+		{
+			xshm_start_time = start;
+			xshm_end_time = end;
+			return;
+		}
+
+		usleep(1);
 	}
-	
-        usleep(1);
-    }
-    return;
+	return;
 }
 
 // do all the cleanup before terminating
@@ -327,11 +282,6 @@ void measure_fw_latency(int input_fd)
 	// take 3 - 4 microseconds
         err = read(input_fd, &inputEvent, sizeof(struct input_event));
 
-        //uint64_t before = micros();
-        //uint64_t after = micros();
-	//float delta = (after - before) / 1000.0f;
-	//if (delta != 0) cout << delta << endl;
-
         // detected a left mouse click
         if( err > -1 &&
             inputEvent.type == EV_KEY &&
@@ -342,56 +292,17 @@ void measure_fw_latency(int input_fd)
 
 	    measure_vblank = 1;
 
-	    //measure_vblank = 1;
-
-            //logEvent(micros(), EVENT_TYPE_CLICK_EVDEV, iteration); // log input event timestamp
             wait_for_color(COLOR_WHITE); // wait for test program to react
-            //wait_for_color(255); // wait for test program to react
 
-            //logEvent(micros(), EVENT_TYPE_XSHM, iteration); // log color change timestamp
             end_time = micros();
-
-            //cout << end_time - start_time << endl;
-            //iteration++;
         }
-
-        // does not seem to change anything
-        //usleep(10);
     }
 }
 
 void get_vblanks()
 {
 	initGLX();
-	/*
-    Display *glxDisplay = XOpenDisplay(NULL);
-    if (!glxDisplay) {
-        cout << "Error: Unable to open X display." << endl;
-	return;
-    }
 
-    int default_screen_id = DefaultScreen(glxDisplay);
-    Window glxRoot = RootWindow(glxDisplay, default_screen_id);
-
-    // Create GLX context
-    static int visual_attribs[] = {
-        GLX_RGBA,
-        GLX_DOUBLEBUFFER,
-        None
-    };
-    XVisualInfo *visual = glXChooseVisual(glxDisplay, default_screen_id, visual_attribs);
-    GLXContext context = glXCreateContext(glxDisplay, visual, NULL, GL_TRUE);
-    glXMakeCurrent(glxDisplay, glxRoot, context);
-
-    // Load GLX_SGI_video_sync extension
-    glXGetVideoSyncSGI = 
-        (GLXGETVIDEOSYNCSGIPROC)glXGetProcAddressARB((const GLubyte *)"glXGetVideoSyncSGI");
-    if (!glXGetVideoSyncSGI) {
-        cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
-        return;
-    }
-    */
-	//cout << "start measure vblank" << endl;
 	unsigned int last_sync_count = 0;
 	uint64_t last_vblank_time = micros();
 
@@ -400,28 +311,20 @@ void get_vblanks()
 		unsigned int sync_count;
 		glXGetVideoSyncSGI(&sync_count);
 
-		//cout << sync_count << endl;
-
 		if (sync_count != last_sync_count)
 		{
 			uint64_t new_vblank_time = micros();
 			last_sync_count = sync_count;
 
-			//cout << "sync" << endl;
-
 			if (measure_vblank == 1)
 			{
-				//cout << "log" << endl;
 				vsync_time[vsync_count] = new_vblank_time;			
 				vsync_count++;
 			}
 		}
 
-		// Sleep for a short time to prevent busy waiting
 		usleep(10);
 	}
-
-	//cout << "end measure vblank" << endl;
 }
 
 int init_serial_port()
@@ -501,17 +404,7 @@ int main(int argc, char** argv)
 
     int iteration = 0;
 
-    //cout << "init XShm" << endl;
     initXShm();
-
-
-    //while(true)
-    //{
-    //        logEvent(micros(), EVENT_TYPE_CLICK_EVDEV, iteration); // log input event timestamp
-    //        wait_for_color(COLOR_WHITE); // wait for test program to react
-    //        logEvent(micros(), EVENT_TYPE_XSHM, iteration); // log color change timestamp
-    //        iteration++;
-    //}
 
     // open input device
     input_fd = open(event_handle, O_RDONLY | O_NONBLOCK);
@@ -552,11 +445,8 @@ int main(int argc, char** argv)
     write(serial_port, msg_calibrate, 1);
     memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
 
-    //cout << "buffer size" << sizeof(serial_read_buffer) << endl;
-
     do {
     	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-	//cout << serial_read_buffer;
     } while (serial_read_num_bytes <= 0);
 
     // TODO: fix this using poll() or select()
@@ -566,10 +456,6 @@ int main(int argc, char** argv)
     	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
 	//cout << serial_read_buffer;
     } while (serial_read_num_bytes <= 0);
-
-    //cout << "num bytes received: " << serial_read_num_bytes << endl;
-    //cout << "calibration: " << serial_read_buffer << endl;
-    //cout << endl << "calibration finished" << endl;
 
     usleep(2 * 1000 * 1000);
     
@@ -598,18 +484,14 @@ int main(int argc, char** argv)
 
 	    while (start_time == 0 || click_time == 0 || end_time == 0 || bright_time == 0)
 	    {
-	    	//cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
 		usleep(10);
 	    }
-	    //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
 
 	    measure_vblank = 0;
 	    
 	    serial_read_num_bytes = 0;
 	    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
 	    do {
-		    //cout << ".";
-	            //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
 		    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
 	    } while (serial_read_num_bytes == 0);
 
@@ -642,24 +524,10 @@ int main(int argc, char** argv)
 	    iteration++;
 
 	    if (iteration > ITERATIONS) break;
-	    /*
-	    //cout << "read is non-blocking" << endl;
-	    //cout << click_time << "," << start_time << "," << end_time << "," << bright_time << endl;
-	    cout << "-------------" << endl;
-	    cout << "input latency:     " << input_latency << endl;
-	    cout << "framework latency: " << framework_latency << endl;
-	    cout << "display latency:   " << display_latency << endl;
-	    cout << "ete latency:       " << ete_latency << endl;
-	    //cout << "sum latency:       " << sum_latency << endl;
-	    cout << "yalmd:             " << yalmd_latency << endl;
-	    cout << "error:             " << ete_latency - yalmd_latency << endl;
-	    */
 
-	    //usleep((rand() / RAND_MAX) * 1000 * 1000);
 	    usleep(200 * 1000);
     }
 
-    //printLog();
     cleanup();
 
     return 0;
