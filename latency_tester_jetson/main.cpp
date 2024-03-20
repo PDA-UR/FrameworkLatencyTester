@@ -21,6 +21,8 @@
 #include <cstdlib>
 #include <GL/gl.h>
 #include <GL/glx.h>
+#include <unistd.h>
+#include <sys/ioctl.h>
 
 using namespace std;
 
@@ -55,6 +57,7 @@ char* testProgramName;
 // Pin Definitions
 const int click_pin = 7;
 const int bright_pin = 15;
+const int bright_pin_2 = 33;
 
 // as printing to stdout is slow, we store all events occuring in a list
 // and print its content in the end
@@ -78,6 +81,7 @@ uint64_t start_time;
 uint64_t click_time;
 uint64_t end_time;
 uint64_t bright_time;
+uint64_t bright_time_2;
 uint64_t vsync_time[1000];
 uint64_t vsync_count = 0;
 uint64_t xshm_start_time;
@@ -90,6 +94,8 @@ thread measure_vblank_thread;
 
 struct termios tty;
 int serial_port;
+fd_set read_fds;
+struct timeval timeout;
 
 unsigned char msg_calibrate[] = {'c'};
 unsigned char msg_measure[] = {'m'};
@@ -124,7 +130,6 @@ void printLog()
 uint64_t micros()
 {
     using namespace chrono;
-    //return duration_cast<microseconds>(high_resolution_clock::now().time_since_epoch()).count();
     return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
 }
 
@@ -249,14 +254,12 @@ void cleanup()
 // log is only printed when terminated, not when interrupted
 void signalHandlerInt(int sig)
 {
-    //printLog();
     cleanup();
     exit(sig);
 }
 
 void signalHandlerTerm(int sig)
 {
-    //printLog();
     cleanup();
     exit(sig);
 }
@@ -269,6 +272,11 @@ void trigger_click(const std::string& channel)
 void trigger_bright(const std::string& channel)
 {
 	bright_time = micros();
+}
+
+void trigger_bright_2(const std::string& channel)
+{
+	bright_time_2 = micros();
 }
 
 void measure_fw_latency(int input_fd)
@@ -289,8 +297,6 @@ void measure_fw_latency(int input_fd)
             inputEvent.value == CLICKED)
         {
             start_time = micros();
-
-	    measure_vblank = 1;
 
             wait_for_color(COLOR_WHITE); // wait for test program to react
 
@@ -330,12 +336,15 @@ void get_vblanks()
 int init_serial_port()
 {
 	// https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
-	int port = open("/dev/ttyUSB0", O_RDWR);
+	int port = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK); // O_NDELAY
 
 	if (port < 0)
 	{
 		cout << "Error: could not open serial port." << endl;
 	}
+
+	cfsetispeed(&tty, B9600);
+	cfsetospeed(&tty, B9600);
 
 	tty.c_cflag &= ~PARENB; // Clear parity bit, disabling parity (most common)
 	tty.c_cflag &= ~CSTOPB; // Clear stop field, only one stop bit used in communication (most common)
@@ -403,6 +412,10 @@ int main(int argc, char** argv)
     }
 
     int iteration = 0;
+    timeout.tv_sec = 0;
+    timeout.tv_usec = 200000;
+    FD_ZERO(&read_fds);
+    FD_SET(serial_port, &read_fds);
 
     initXShm();
 
@@ -421,9 +434,11 @@ int main(int argc, char** argv)
     // set pin as an output pin with optional initial state of HIGH
     GPIO::setup(click_pin, GPIO::IN);
     GPIO::setup(bright_pin, GPIO::IN);
+    GPIO::setup(bright_pin_2, GPIO::IN);
 
     GPIO::add_event_detect(click_pin, GPIO::Edge::RISING, trigger_click, 0); // , 10)
     GPIO::add_event_detect(bright_pin, GPIO::Edge::RISING, trigger_bright, 0);
+    GPIO::add_event_detect(bright_pin_2, GPIO::Edge::RISING, trigger_bright_2, 0);
 
     serial_port = init_serial_port();
 
@@ -433,31 +448,29 @@ int main(int argc, char** argv)
 	    exit(SIGABRT);
     }
 
-    char serial_read_buffer[128];
+    char serial_read_buffer[256];
     int serial_read_num_bytes = 0;
 
     usleep(2 * 1000 * 1000);
-    write(serial_port, msg_toggle, 1);
+    write(serial_port, msg_toggle, 1); 
     usleep(500 * 1000);
     write(serial_port, msg_toggle, 1);
     usleep(500 * 1000);
 
     write(serial_port, msg_calibrate, 1);
-    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-
-    do {
-    	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-    } while (serial_read_num_bytes <= 0);
+    //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
 
     // TODO: fix this using poll() or select()
     memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
     serial_read_num_bytes = 0;
-    do {
-    	serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-	//cout << serial_read_buffer;
-    } while (serial_read_num_bytes <= 0);
 
     usleep(2 * 1000 * 1000);
+
+    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
+
+    usleep(1000);
+    ioctl(serial_port, TCFLSH, 2);
+    usleep(1000);
     
     measuring = 1;
 
@@ -470,7 +483,7 @@ int main(int argc, char** argv)
 
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,xshm_start_time,xshm_end_time,yalmd_latency,vblanks" << endl;
+    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks" << endl;
 
     while(measuring)
     {
@@ -478,22 +491,27 @@ int main(int argc, char** argv)
 	    click_time = 0;
 	    end_time = 0;
 	    bright_time = 0;
+	    bright_time_2 = 0;
+
+	    measure_vblank = 1;
+	    
+	    usleep(20000);
 
 	    write(serial_port, msg_measure, 1);
 
-
-	    while (start_time == 0 || click_time == 0 || end_time == 0 || bright_time == 0)
+	    while (start_time == 0 || click_time == 0 || end_time == 0 || bright_time == 0 || bright_time_2 == 0)
 	    {
 		usleep(10);
 	    }
 
 	    measure_vblank = 0;
-	    
+
 	    serial_read_num_bytes = 0;
 	    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-	    do {
-		    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-	    } while (serial_read_num_bytes == 0);
+
+	    usleep(300000);
+
+	    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
 
 	    int input_latency = start_time - click_time;
 	    int framework_latency = end_time - start_time;
@@ -507,6 +525,7 @@ int main(int argc, char** argv)
 		 << start_time << ","
 		 << end_time << ","
 		 << bright_time << ","
+		 << bright_time_2 << ","
 		 << xshm_start_time << ","
 		 << xshm_end_time << ","
 		 << yalmd_latency << ",";
