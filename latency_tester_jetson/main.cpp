@@ -4,7 +4,6 @@
 #include <string>
 #include <JetsonGPIO.h>
 #include <stdio.h>
-#include <vector>
 #include <unistd.h>
 #include <fcntl.h>
 #include <signal.h>
@@ -21,8 +20,8 @@
 #include <cstdlib>
 #include <GL/gl.h>
 #include <GL/glx.h>
-#include <unistd.h>
 #include <sys/ioctl.h>
+#include <X11/extensions/Xdamage.h>
 
 using namespace std;
 
@@ -70,8 +69,6 @@ struct Event {
     int event_type; // used to identify events; replaced with EVENT_NAMES when printing the log
 };
 
-vector<Event> events;   // event list
-
 // used to make events human readable for easier evaluation
 const char* EVENT_NAMES[2] = {"click_evdev", "xshm"};
 
@@ -84,13 +81,20 @@ uint64_t bright_time;
 uint64_t bright_time_2;
 uint64_t vsync_time[1000];
 uint64_t vsync_count = 0;
+uint64_t damage_time[1000000];
+uint64_t damage_count = 0;
 uint64_t xshm_start_time;
 uint64_t xshm_end_time;
 
 bool measure_vblank = 0;
+bool measure_xdamage = 0;
+bool use_xdamage = 0;
 
 thread fw_test_thread;
 thread measure_vblank_thread;
+thread measure_xdamage_thread;
+
+Window xdamage_win;
 
 struct termios tty;
 int serial_port;
@@ -100,31 +104,6 @@ struct timeval timeout;
 unsigned char msg_calibrate[] = {'c'};
 unsigned char msg_measure[] = {'m'};
 unsigned char msg_toggle[] = {'o'};
-
-// appends event to the events list
-void logEvent(uint64_t time, int event, int iteration)
-{
-    Event tempEvent = Event();
-    tempEvent.time = time;
-    tempEvent.event_type = event;
-    tempEvent.iteration = iteration;
-    events.push_back(tempEvent);
-}
-
-// called when program is finished
-// iterates the events list and prints it to stdout in CSV format
-void printLog()
-{
-    cout << "time,iteration,event,program" << endl;
-    for(auto const& ev : events)
-    {
-        cout << dec <<
-            ev.time << "," <<
-            ev.iteration << "," <<
-            EVENT_NAMES[ev.event_type] << "," <<
-            testProgramName << endl;
-    }
-}
 
 // get current microseconds
 uint64_t micros()
@@ -305,6 +284,70 @@ void measure_fw_latency(int input_fd)
     }
 }
 
+int handle_xdamage_error(Display *d, XErrorEvent *e)
+{
+	use_xdamage = 0;
+	return 0;
+}
+
+void get_xdamage(Window win)
+{
+	if (!use_xdamage)
+	{
+		return;
+	}
+	//win = 0x3400007;
+	//cout << hex << win << endl;
+
+	XSetErrorHandler(handle_xdamage_error);
+	Display* dsp = XOpenDisplay(NULL);
+	XWindowAttributes attributes = {0};
+	int damage_event, damage_error, ret;
+	Damage damage;
+
+	try {
+		XGetWindowAttributes(dsp, win, &attributes);
+		ret = XDamageQueryExtension(dsp, &damage_event, &damage_error);
+
+		if (ret < 1)
+		{
+			use_xdamage = 0;
+			damage_count = 0;
+			return;
+		}
+
+		damage = XDamageCreate(dsp, win, XDamageReportNonEmpty);
+	}
+	catch (int e) {
+		use_xdamage = 0;
+		return;
+	}
+	XEvent ev;
+	//XDamageNotifyEvent* ev_dmg;
+
+	while(measuring)
+	{
+		if (measure_xdamage)
+		{
+			XNextEvent(dsp, &ev);
+			if (ev.type == damage_event + XDamageNotify)
+			{
+				//cout << "damage" << endl;
+				//ev_dmg = (XDamageNotifyEvent*) &ev;
+				uint64_t new_damage_time = micros();
+				damage_time[damage_count] = new_damage_time;			
+				damage_count++;
+				if (damage_count > 1000000)
+				{
+					cout << "obacht! damage_count too big" << endl;
+				}
+				XDamageSubtract(dsp, damage, None, None);
+			}
+		}
+	}
+	XCloseDisplay(dsp);
+}
+
 void get_vblanks()
 {
 	initGLX();
@@ -405,10 +448,10 @@ int main(int argc, char** argv)
 	ITERATIONS = atoi(argv[3]);
     }
 
-    if(argc == 6)
+    if(argc == 5)
     {
-        X = atoi(argv[4]);
-        Y = atoi(argv[5]);
+        xdamage_win = atoi(argv[4]);
+	use_xdamage = 1;
     }
 
     int iteration = 0;
@@ -467,6 +510,7 @@ int main(int argc, char** argv)
     usleep(2 * 1000 * 1000);
 
     serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
+    //cout << "calib: " << serial_read_buffer << endl;
 
     usleep(1000);
     ioctl(serial_port, TCFLSH, 2);
@@ -481,9 +525,15 @@ int main(int argc, char** argv)
     measure_vblank = 0;
     measure_vblank_thread = thread(get_vblanks);
 
+    if (use_xdamage)
+    {
+	    measure_xdamage = 0;
+	    measure_xdamage_thread = thread(get_xdamage, xdamage_win);
+    }
+
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks" << endl;
+    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks,damage" << endl;
 
     while(measuring)
     {
@@ -494,6 +544,7 @@ int main(int argc, char** argv)
 	    bright_time_2 = 0;
 
 	    measure_vblank = 1;
+	    measure_xdamage = 1;
 	    
 	    usleep(20000);
 
@@ -504,7 +555,10 @@ int main(int argc, char** argv)
 		usleep(10);
 	    }
 
+	    usleep(20000);
+
 	    measure_vblank = 0;
+	    measure_xdamage = 0;
 
 	    serial_read_num_bytes = 0;
 	    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
@@ -519,6 +573,8 @@ int main(int argc, char** argv)
 	    int ete_latency = bright_time - click_time;
 	    int sum_latency = input_latency + framework_latency + display_latency;
 	    int yalmd_latency = atoi(serial_read_buffer);
+
+	    //cout << "diff: " << (int)(bright_time_2 - bright_time) << endl;
 
 	    cout << iteration << ","
 		 << click_time << ","
@@ -536,9 +592,21 @@ int main(int argc, char** argv)
 			vsync_time[i] = 0;
 		}
 
+		cout << ",";
+
+		if (use_xdamage)
+		{
+			for (int i = 0; i < damage_count; i++)
+			{
+				cout << damage_time[i] << ";";
+				damage_time[i] = 0;
+			}
+		}
+
 		cout << endl;
 
 		vsync_count = 0;
+		damage_count = 0;
 
 	    iteration++;
 
