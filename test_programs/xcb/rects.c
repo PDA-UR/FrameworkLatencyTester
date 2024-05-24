@@ -22,7 +22,7 @@ void draw_rects(xcb_connection_t *c, xcb_drawable_t win, xcb_gcontext_t gc)
 
         uint32_t color = 0xff << 24 | r << 16 | g << 8 | b;
 
-        int x = rand() % (WIDTH - rect_w);
+        int x = 300 + rand() % (WIDTH - rect_w - 300);
         int y = rand() % (HEIGHT - rect_h);
 
         xcb_change_gc(c, gc, XCB_GC_FOREGROUND, &color);
@@ -32,7 +32,7 @@ void draw_rects(xcb_connection_t *c, xcb_drawable_t win, xcb_gcontext_t gc)
 
     uint32_t color = 0xffffffff;
     xcb_change_gc(c, gc, XCB_GC_FOREGROUND, &color);
-    xcb_rectangle_t rect = { 0, 0, 300, 300 };
+    xcb_rectangle_t rect = { 0, 0, 300, 1080 };
     xcb_poly_fill_rectangle(c, win, gc, 1, &rect);
 }
 
@@ -100,6 +100,8 @@ int main ()
     /* We flush the request */
     xcb_flush (c);
 
+    xcb_button_press_event_t *ev;
+
     while ((e = xcb_wait_for_event (c))) {
         switch (e->response_type & ~0x80) {
             case XCB_EXPOSE:
@@ -113,7 +115,7 @@ int main ()
                 break;
             case XCB_BUTTON_PRESS:
                 /* Handle the ButtonPress event type */
-                xcb_button_press_event_t *ev = (xcb_button_press_event_t *)e;
+                ev = (xcb_button_press_event_t *)e;
 
                 /* We draw the rectangles */
                 //xcb_poly_fill_rectangle (c, win, foreground, 1, rectangles);

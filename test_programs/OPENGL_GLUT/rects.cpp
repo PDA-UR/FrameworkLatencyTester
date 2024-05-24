@@ -28,7 +28,7 @@ GLfloat *randomColor()
 GLfloat *randomPosition()
 {
     GLfloat *position = new GLfloat[2];
-    position[0] = static_cast<float>(rand() % (WIDTH - rect_w));
+    position[0] = static_cast<float>(300 + rand() % (WIDTH - rect_w - 300));
     position[1] = static_cast<float>(rand() % (HEIGHT - rect_h));
     return position;
 }
@@ -51,7 +51,7 @@ void drawRectangles()
 
     // white rect top left corner
     int w = 300;
-    int h = 300;
+    int h = 1080;
     GLfloat *position = new GLfloat[2];
     position[0] = 0.0;
     position[1] = HEIGHT - h;

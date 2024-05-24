@@ -99,7 +99,7 @@ void MainWindow::paint()
         drawRects(&painter);
         brush = QBrush("#FFFFFF");
         painter.setBrush(brush);    
-        painter.drawRect(0, 0, 300, 300);
+        painter.drawRect(0, 0, 300, 1080);
     }
     else
     {

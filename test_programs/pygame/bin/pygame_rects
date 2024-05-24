@@ -43,7 +43,7 @@ def drawNormalRect(surface, color, rect):
 
 def drawRects():
     for i in range(n_rects):
-        x = randint(0, WIDTH - rect_w)
+        x = randint(300, WIDTH - rect_w)
         y = randint(0, HEIGHT - rect_h)
         r = randint(0, 255)
         g = randint(0, 255)
@@ -53,7 +53,7 @@ def drawRects():
         drawTransparentRect(screen, color, (x, y, int(rect_w), int(rect_h)), t)
     
     # white top left rect for sensor
-    drawNormalRect(screen, background_color_white, (0, 0, 300, 300))
+    drawNormalRect(screen, background_color_white, (0, 0, 300, 1080))
 
 while running:
     event = pygame.event.poll()
@@ -61,7 +61,7 @@ while running:
         running = False
     
     if event.type == pygame.MOUSEBUTTONDOWN:
-        screen.fill(background_color_white)
+        #screen.fill(background_color_white)
         drawRects()
     
     if event.type == pygame.MOUSEBUTTONUP:

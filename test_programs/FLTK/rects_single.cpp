@@ -1,12 +1,12 @@
 #include <FL/Fl.H>
-#include <FL/Fl_Double_Window.H>
+#include <FL/Fl_Single_Window.H>
 #include <FL/fl_draw.H>
 #include <cstdlib>
 
-class MainWindow : public Fl_Double_Window
+class MainWindow : public Fl_Single_Window
 {
     public:
-        MainWindow() : Fl_Double_Window(0, 0, 1920, 1080)
+        MainWindow() : Fl_Single_Window(0, 0, 1920, 1080)
     {
         color(FL_BLACK);
         label("FLTK Test Application");
@@ -59,7 +59,7 @@ class MainWindow : public Fl_Double_Window
                     redraw();
                     return 1;
             }
-            return Fl_Double_Window::handle(event);
+            return Fl_Single_Window::handle(event);
         }
 };
 

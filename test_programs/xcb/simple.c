@@ -66,7 +66,7 @@ int main ()
 
     /* We flush the request */
     xcb_flush (c);
-
+    xcb_button_press_event_t *ev;
     while ((e = xcb_wait_for_event (c))) {
         switch (e->response_type & ~0x80) {
             case XCB_EXPOSE:
@@ -80,7 +80,7 @@ int main ()
                 break;
             case XCB_BUTTON_PRESS:
                 /* Handle the ButtonPress event type */
-                xcb_button_press_event_t *ev = (xcb_button_press_event_t *)e;
+                ev = (xcb_button_press_event_t *)e;
 
                 /* We draw the rectangles */
                 xcb_poly_fill_rectangle (c, win, foreground, 1, rectangles);

@@ -42,7 +42,7 @@ static void draw(cairo_t *cr)
             float a = 1; //(float)rand() / RAND_MAX;
             cairo_set_source_rgba(cr, r, g, b, a);
 
-            int x = rand() % 1920;
+            int x = 300 + rand() % (1920 + 300);
             int y = rand() % 1080;
             int width = rand() % (1920 - x);
             int height = rand() % (1080 - y);
@@ -51,7 +51,7 @@ static void draw(cairo_t *cr)
             cairo_fill(cr);
         }
         cairo_set_source_rgba(cr, 1, 1, 1, 1);
-        cairo_rectangle(cr, 0, 0, 300, 300);
+        cairo_rectangle(cr, 0, 0, 300, 1080);
         cairo_fill(cr);
     }
     else

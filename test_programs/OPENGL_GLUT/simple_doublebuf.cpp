@@ -37,7 +37,7 @@ void mouse(int button, int state, int x, int y) {
 int main(int argc, char **argv) {
     signal(SIGINT, signalHandler);
     glutInit(&argc, argv);
-    glutInitDisplayMode(GLUT_RGBA);
+    glutInitDisplayMode(GLUT_RGBA | GLUT_DOUBLE);
     glutInitWindowSize(windowWidth, windowHeight);
     glutCreateWindow("GLUT Test Application");
     glutFullScreen();

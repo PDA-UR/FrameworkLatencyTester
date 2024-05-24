@@ -5,6 +5,7 @@ import java.util.Random;
 
 public class JavaSwing_rects extends JFrame {
     private Color color;
+    private int HEIGHT;
 
     public JavaSwing_rects() {
         setSize(1920, 1080);
@@ -20,6 +21,7 @@ public class JavaSwing_rects extends JFrame {
     }
 
     public void mousePressed(MouseEvent e) {
+	    HEIGHT = getHeight();
         color = new Color(255, 255, 255);
 
 
@@ -27,10 +29,10 @@ public class JavaSwing_rects extends JFrame {
 
         Random r = new Random();
         for (int i = 0; i < 1000; i++) {
-            int x = r.nextInt(1920);
-            int y = r.nextInt(1080);
+            int x = 300 + r.nextInt(1920 - 300);
+            int y = r.nextInt(HEIGHT);
             int width = r.nextInt(1920 - x);
-            int height = r.nextInt(1080 - y);
+            int height = r.nextInt(HEIGHT - y);
             int red = r.nextInt(254);
             int green = r.nextInt(255);
             int blue = r.nextInt(255);
@@ -39,7 +41,7 @@ public class JavaSwing_rects extends JFrame {
             g.fillRect(x, y, width, height);
         }
         g.setColor(new Color(255, 255, 255));
-        g.fillRect(0, 0, 300, 300);
+        g.fillRect(0, 0, 300, HEIGHT);
 
         Toolkit.getDefaultToolkit().sync();
     }

@@ -37,7 +37,7 @@ void draw_rects()
     }
 
     XSetForeground(display, DefaultGC(display, screen), 0xffffffff);
-    XFillRectangle(display, window, DefaultGC(display, screen), 0, 0, 300, 300);
+    XFillRectangle(display, window, DefaultGC(display, screen), 0, 0, 300, 1080);
 }
 
 // make sure we clean up when program is interrupted
@@ -48,29 +48,29 @@ void signalHandler(int sig)
 
 void toggleFullscreen() {
 
-    Atom wmState = XInternAtom(display, "_NET_WM_STATE", True);
-    Atom wmFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", True);
+//    Atom wmState = XInternAtom(display, "_NET_WM_STATE", True);
+//    Atom wmFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", True);
+//
+//    Atom wm_state   = XInternAtom (display, "_NET_WM_STATE", True );
+//    Atom wm_fullscreen = XInternAtom (display, "_NET_WM_STATE_FULLSCREEN", True );
+//
+//    XChangeProperty(display, window, wm_state, XA_ATOM, 32,
+//		    PropModeReplace, (unsigned char *)&wm_fullscreen, 1);
 
-    Atom wm_state   = XInternAtom (display, "_NET_WM_STATE", True );
-    Atom wm_fullscreen = XInternAtom (display, "_NET_WM_STATE_FULLSCREEN", True );
 
-    XChangeProperty(display, window, wm_state, XA_ATOM, 32,
-		    PropModeReplace, (unsigned char *)&wm_fullscreen, 1);
+    Atom wmState = XInternAtom(display, "_NET_WM_STATE", False);
+    Atom wmFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
 
+    XEvent event = { 0 };
+    event.type = ClientMessage;
+    event.xclient.window = window;
+    event.xclient.message_type = wmState;
+    event.xclient.format = 32;
+    event.xclient.data.l[0] = 2; // _NET_WM_STATE_TOGGLE
+    event.xclient.data.l[1] = wmFullscreen;
+    event.xclient.data.l[2] = 0;
 
-    //Atom wmState = XInternAtom(display, "_NET_WM_STATE", False);
-    //Atom wmFullscreen = XInternAtom(display, "_NET_WM_STATE_FULLSCREEN", False);
-
-    //XEvent event = { 0 };
-    //event.type = ClientMessage;
-    //event.xclient.window = window;
-    //event.xclient.message_type = wmState;
-    //event.xclient.format = 32;
-    //event.xclient.data.l[0] = 2; // _NET_WM_STATE_TOGGLE
-    //event.xclient.data.l[1] = wmFullscreen;
-    //event.xclient.data.l[2] = 0;
-
-    //XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, &event);
+    XSendEvent(display, DefaultRootWindow(display), False, SubstructureNotifyMask | SubstructureRedirectMask, &event);
 }
 
 int main() {
@@ -91,7 +91,8 @@ int main() {
 
     XRRScreenResources *res = XRRGetScreenResources(display, RootWindow(display, screen));
     XRRCrtcInfo *crtcInfo = XRRGetCrtcInfo(display, res, res->crtcs[0]);
-    XMoveResizeWindow(display, window, crtcInfo->x, crtcInfo->y, crtcInfo->width, crtcInfo->height);
+    //XMoveResizeWindow(display, window, crtcInfo->x, crtcInfo->y, crtcInfo->width, crtcInfo->height);
+    XMoveResizeWindow(display, window, 0, 0, 1920, 1080);
     XRRFreeCrtcInfo(crtcInfo);
     XRRFreeScreenResources(res);
 

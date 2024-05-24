@@ -98,14 +98,14 @@ int main(int argc, char** argv)
                 if (event.button.button == SDL_BUTTON_LEFT)
                 {
                     glClear(GL_COLOR_BUFFER_BIT);
-                    for (int i = 0; i < 1000; i++)
+                    for (int i = 0; i < n_rects; i++)
                     {
                         float r = (float)rand() / RAND_MAX;
                         float g = (float)rand() / RAND_MAX;
                         float b = (float)rand() / RAND_MAX;
                         glColor3f(r, g, b);
 
-                        int x = rand() % WIDTH;
+                        int x = 300 + rand() % (WIDTH - 300);
                         int y = rand() % HEIGHT;
                         int width = rand() % (WIDTH - x);
                         int height = rand() % (HEIGHT - y);
@@ -122,8 +122,8 @@ int main(int argc, char** argv)
                     glBegin(GL_QUADS);
                     glVertex2i(0, 0);
                     glVertex2i(300, 0);
-                    glVertex2i(300, 300);
-                    glVertex2i(0, 300);
+                    glVertex2i(300, 1080);
+                    glVertex2i(0, 1080);
                     glEnd();
                     glFlush();
                     SDL_GL_SwapWindow(window);

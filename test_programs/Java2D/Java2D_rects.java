@@ -6,6 +6,7 @@ import java.util.Random;
 public class Java2D_rects extends JFrame {
     private Color color;
     private boolean pressed = false;
+    private int HEIGHT;
 
     public Java2D_rects() {
         setSize(1920, 1080);
@@ -14,9 +15,13 @@ public class Java2D_rects extends JFrame {
         setVisible(true);
         color = new Color(0, 0, 0);
 
+
         Graphics2D g2d = (Graphics2D) getGraphics();
         g2d.setColor(color);
-        g2d.fillRect(0, 0, getWidth(), getHeight());
+	HEIGHT = getHeight();
+        g2d.fillRect(0, 0, getWidth(), HEIGHT);
+	    Toolkit.getDefaultToolkit().sync();
+
     }
 
     public void paint(Graphics g) {
@@ -43,15 +48,16 @@ public class Java2D_rects extends JFrame {
     }
 
     public void mousePressed(MouseEvent e) {
-        color = new Color(255, 255, 255);
+	HEIGHT = getHeight();
+        //color = new Color(255, 255, 255);
         Graphics2D g2d = (Graphics2D) getGraphics();
 
         Random r = new Random();
         for (int i = 0; i < 1000; i++) {
-            int x = r.nextInt(1920);
-            int y = r.nextInt(1080);
+            int x = 300 + r.nextInt(1920 - 300);
+            int y = r.nextInt(HEIGHT);
             int width = r.nextInt(1920 - x);
-            int height = r.nextInt(1080 - y);
+            int height = r.nextInt(HEIGHT - y);
             int red = r.nextInt(254);
             int green = r.nextInt(255);
             int blue = r.nextInt(255);
@@ -60,7 +66,7 @@ public class Java2D_rects extends JFrame {
             g2d.fillRect(x, y, width, height);
         }
         g2d.setColor(new Color(255, 255, 255));
-        g2d.fillRect(0, 0, 300, 300);
+        g2d.fillRect(0, 0, 300, HEIGHT);
 
         //g2d.setColor(color);
         //g2d.fillRect(0, 0, getWidth(), getHeight());
