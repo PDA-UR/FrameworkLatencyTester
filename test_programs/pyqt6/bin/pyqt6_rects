@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-from PyQt6 import uic
+#from PyQt6 import uic
 from PyQt6.QtWidgets import * 
 from PyQt6.QtGui import * 
 from PyQt6.QtCore import * 
@@ -40,7 +40,7 @@ class MainWindow(QWidget):
 
         brush = QBrush(self.color)
         painter.setBrush(brush)
-        painter.drawRect(0, 0, 300, 300)
+        painter.drawRect(0, 0, 300, 1080)
         painter.end()
 
     def drawRects(self, painter):

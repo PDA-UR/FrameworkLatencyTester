@@ -48,7 +48,7 @@ def mousePressed(event):
     drawRects()
 
     color = rgbToHex(255, 255, 255)
-    drawNormalRect(color, (0, 0, 300, 300))
+    drawNormalRect(color, (0, 0, 300, 1080))
 
     
 def mouseReleased(event):

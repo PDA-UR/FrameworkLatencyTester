@@ -37,7 +37,7 @@ class TestApp(wx.Frame):
                 dc.DrawRectangle(x, y, width, height)
             dc.SetBrush(wx.Brush("white"))
             dc.SetPen(wx.Pen("white", 1))
-            dc.DrawRectangle(0, 0, 300, 300)
+            dc.DrawRectangle(0, 0, 300, 1080)
         else:
             dc.SetBrush(wx.Brush("black"))
             dc.SetPen(wx.Pen("black", 1))
