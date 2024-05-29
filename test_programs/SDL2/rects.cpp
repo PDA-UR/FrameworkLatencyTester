@@ -51,7 +51,7 @@ void render(SDL_Renderer *renderer)
         uint8_t b = rand() % 255;
         uint8_t a = 255; //55 + rand() % 200;
 
-        int x = rand() % (WIDTH - rect_w);
+        int x = rect_w + rand() % (WIDTH - 2 * rect_w);
         int y = rand() % (HEIGHT - rect_h);
 
         SDL_SetRenderDrawColor(renderer, r, g, b, a);
@@ -60,7 +60,7 @@ void render(SDL_Renderer *renderer)
     }
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    SDL_Rect rect = { 0, 0, 300, 300 };
+    SDL_Rect rect = { 0, 0, 300, 1080 };
     SDL_RenderFillRect(renderer, &rect);
 }
 
