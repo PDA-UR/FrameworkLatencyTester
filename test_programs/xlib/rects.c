@@ -28,7 +28,7 @@ void draw_rects()
 
         int color = 0xff << 24 | r << 16 | g << 8 | b;
 
-        int x = rand() % (WIDTH - rect_w);
+        int x = rect_w + rand() % (WIDTH - 2 * rect_w);
         int y = rand() % (HEIGHT - rect_h);
 
 
