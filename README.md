@@ -73,6 +73,10 @@ sudo apt install libxcb-keysyms1-dev
 sudo apt install libxcb-util-dev
 sudo apt install libxcb-image0-dev
 sudo apt install libsoil-dev
+sudo apt install libsdl2-dev
+sudo apt install libsdl2-image-dev
+sudo apt install qtbase5-dev
+sudo apt install qt5-qmake
 
 pip3 install wxPython
 pip3 install pyqt5
