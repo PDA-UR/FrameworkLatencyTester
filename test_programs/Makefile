@@ -1,11 +1,13 @@
 sdl2:
-	$(MAKE) -C SDL2/ all
+	$(MAKE) -C SDL2-software/ all
+	$(MAKE) -C SDL2-opengl/ all
+	$(MAKE) -C SDL2-opengles2/ all
 
 glut:
-	$(MAKE) -C OPENGL_GLUT/ all
+	$(MAKE) -C GLUT/ all
 
 glew:
-	$(MAKE) -C OPENGL_GLEW/ all
+	$(MAKE) -C GLEW/ all
 
 gtk:
 	$(MAKE) -C gtk/ all
@@ -34,9 +36,11 @@ xcb:
 all: glew glut sdl2 gtk swing qt5 java2d FLTK xlib xcb
 
 clean:
-	$(MAKE) -C SDL2/ clean
-	$(MAKE) -C OPENGL_GLUT/ clean
-	$(MAKE) -C OPENGL_GLEW/ clean
+	$(MAKE) -C SDL2-software/ clean
+	$(MAKE) -C SDL2-opengl/ clean
+	$(MAKE) -C SDL2-opengles2/ clean
+	$(MAKE) -C GLUT/ clean
+	$(MAKE) -C GLEW/ clean
 	$(MAKE) -C gtk/ clean
 	$(MAKE) -C JavaSwing/ clean
 	$(MAKE) -C Qt5/ clean
