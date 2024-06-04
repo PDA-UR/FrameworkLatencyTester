@@ -30,11 +30,13 @@ trap sigint INT
 
 sleep "3s"
 
+xdotool mousemove 500 500
 python3 click.py 0 > /dev/null &
 
 sleep "2s"
 
 python3 click.py 3 > /dev/null &
+xdotool mousemove 500 500
 WINID=$(xwininfo -int | grep "Window id:" | awk '{split($0,a," "); print a[4];}')
 
 # (c) Raphael "WinID" Wagner, 2024
@@ -44,7 +46,7 @@ echo "$TEST_PROGRAM $TEST_PARAMS $WINID"
 
 sleep "1s"
 
-sudo ./latency_tester_jetson/bin/latency_tester "/dev/input/event1" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+sudo ./latency_tester_pi/bin/latency_tester "/dev/input/event5" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
 
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 1 "${PATH_DATA}_fw.csv"
 
