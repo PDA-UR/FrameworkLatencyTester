@@ -3,11 +3,11 @@
 
 static void draw(cairo_t *);
 
-int r = 0;
-int g = 0;
-int b = 0;
-
 int pressed = 0;
+float r;
+float g;
+float b;
+float a;
 
 static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
@@ -32,33 +32,33 @@ static gboolean on_release_event(GtkWidget *widget, gpointer data)
 
 static void draw(cairo_t *cr)
 {
+    cairo_set_source_rgb(cr, 0, 0, 0);
+    cairo_move_to(cr, 0.0, 0.0);
+    cairo_rectangle(cr, 0, 0, 1920, 1080);
+    cairo_fill(cr);
+
     if(pressed)
     {
         for (int i = 0; i < 1000; i++)
         {
-            float r = (float)rand() / RAND_MAX;
-            float g = (float)rand() / RAND_MAX;
-            float b = (float)rand() / RAND_MAX;
-            float a = 1; //(float)rand() / RAND_MAX;
+            r = (float)rand() / RAND_MAX;
+            g = (float)rand() / RAND_MAX;
+            b = (float)rand() / RAND_MAX;
+            a = 1.0f; //(float)rand() / RAND_MAX;
             cairo_set_source_rgba(cr, r, g, b, a);
 
-            int x = 300 + rand() % (1920 + 300);
+            int x = 300 + rand() % (1920 - 300);
             int y = rand() % 1080;
-            int width = rand() % (1920 - x);
-            int height = rand() % (1080 - y);
+            //int width = rand() % (1920 - x);
+            //int height = rand() % (1080 - y);
+            int width = 100 + rand() % 500;
+            int height = 100 + rand() % 500;
 
             cairo_rectangle(cr, x, y, width, height);
             cairo_fill(cr);
         }
         cairo_set_source_rgba(cr, 1, 1, 1, 1);
         cairo_rectangle(cr, 0, 0, 300, 1080);
-        cairo_fill(cr);
-    }
-    else
-    {
-        cairo_set_source_rgb(cr, 0, 0, 0);
-        cairo_move_to(cr, 0.0, 0.0);
-        cairo_rectangle(cr, 0, 0, 1920, 1080);
         cairo_fill(cr);
     }
 }
