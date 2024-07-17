@@ -34,7 +34,7 @@ def acquire_images(cam, n):
 
 def init_camera():
     system = PySpin.System.GetInstance()
-    cam = system.GetCameras[0]
+    cam = system.GetCameras()[0]
     cam.Init()
     #cam.TriggerMode.SetValue(PySpin.TriggerMode_Off)
     #cam.AcquisitionMode.SetValue(PySpin.AcquisitionMode_Continuous)#SingleFrame)
