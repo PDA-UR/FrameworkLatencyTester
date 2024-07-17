@@ -28,6 +28,12 @@
 #include <linux/ppdev.h>
 #include <linux/parport.h>
 
+// used by exec
+#include <cstdarg>
+#include <fstream>
+#include <memory>
+#include <cstdio>
+
 using namespace std;
 
 // Function pointer for glXGetVideoSyncSGI
@@ -124,6 +130,28 @@ uint64_t get_micros()
 {
     using namespace chrono;
     return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+}
+
+// source: Meritozh on GitHub: https://gist.github.com/meritozh/f0351894a2a4aa92871746bf45879157
+string exec(const char* cmd) 
+{
+    shared_ptr<FILE> pipe(popen(cmd, "r"), pclose);
+    if (!pipe) return "ERROR";
+    char buffer[128];
+    string result = "";
+    while (!feof(pipe.get())) 
+    {
+        if (fgets(buffer, 128, pipe.get()) != NULL)
+            result += buffer;
+    }
+    return result;
+}
+
+double runTearingDetection()
+{
+    // todo: add exception handling
+    string result_string = exec("python3 tearing_detector.py");
+    return stod(result_string);
 }
 
 void initGLX()
@@ -652,7 +680,7 @@ int main(int argc, char** argv)
 
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks,damage" << endl;
+    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks,damage,tearing_offset" << endl;
 
     while(measuring)
     {
@@ -700,6 +728,12 @@ int main(int argc, char** argv)
 	    int sum_latency = input_latency + framework_latency + display_latency;
 	    int yalmd_latency = atoi(serial_read_buffer);
 
+        double tearing_offset = 0.;
+        if (bright_time_2 < bright_time)
+        {
+            tearing_offset = runTearingDetection();
+        }
+
 	    //cout << "return from yalmd " << serial_read_buffer << endl;
 	    //cout << "click to bright1: " << (int)(bright_time - click_time) << endl;
 	    //cout << "click to bright2: " << (int)(bright_time_2 - click_time) << endl;
@@ -733,6 +767,7 @@ int main(int argc, char** argv)
 			}
 		}
 
+        cout << tearing_offset;
 		cout << endl;
 
 		vsync_count = 0;
