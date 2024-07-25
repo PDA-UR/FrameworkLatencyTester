@@ -150,7 +150,9 @@ string exec(const char* cmd)
 double runTearingDetection()
 {
     // todo: add exception handling
-    string result_string = exec("python3 tearing_detector.py");
+    //cout << "tearing detection" << endl;
+    string result_string = exec("su latency -c 'python3.10 tearing_detector.py'");
+    //cout << result_string << endl;
     return stod(result_string);
 }
 
@@ -706,7 +708,13 @@ int main(int argc, char** argv)
 	    while (start_time == 0 || click_time == 0 || end_time == 0 || bright_time == 0 || bright_time_2 == 0)
 	    {
 		usleep(10);
+		// click
+		// bright
+		// bright_2
+		//cout << start_time << " - " << click_time << " - " << end_time << " - " << bright_time << " - " << bright_time_2 << endl;
 	    }
+
+	    //cout << "after big while" << endl;
 
 	    parport_active = 0;
 	    usleep(20000);
@@ -729,6 +737,7 @@ int main(int argc, char** argv)
 	    int yalmd_latency = atoi(serial_read_buffer);
 
         double tearing_offset = 0.;
+	//cout << bright_time - bright_time_2 << endl;
         if (bright_time_2 < bright_time)
         {
             tearing_offset = runTearingDetection();
