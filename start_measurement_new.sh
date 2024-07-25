@@ -46,7 +46,8 @@ echo "$TEST_PROGRAM $TEST_PARAMS $WINID"
 
 sleep "1s"
 
-sudo ./latency_tester_pi/bin/latency_tester "/dev/input/event5" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+#sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 29360135 > "${PATH_DATA}.csv"
 
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 1 "${PATH_DATA}_fw.csv"
 
