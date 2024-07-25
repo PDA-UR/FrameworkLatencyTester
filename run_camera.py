@@ -5,17 +5,22 @@ import sys
 
 NUM_IMAGES = 10
 
+# run with argument to capture set amount of images
+# run without arguments to capture images indefinitely
 if len(sys.argv) > 1:
     try:
         NUM_IMAGES = int(sys.argv[1])
     except:
-        NUM_IMAGES = 10
+        NUM_IMAGES = 0
 
 def acquire_images(cam, n):
     try:
         images = []
 
-        for i in range(n):
+        #for i in range(n):
+        counter = 0
+
+        while True:
             cam.BeginAcquisition()
             image = cam.GetNextImage()
             if image.IsIncomplete():
@@ -28,6 +33,11 @@ def acquire_images(cam, n):
 
             print(f'capture image {i}')
             cam.EndAcquisition()
+
+            if NUM_IMAGES != 0:
+                counter += 1
+                if counter > NUM_IMAGES:
+                    break
 
     except PySpin.SpinnakerException as ex:
         print('ERROR:', ex)
