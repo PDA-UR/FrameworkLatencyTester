@@ -3,7 +3,7 @@ import PySpin
 import cv2
 import sys
 
-NUM_IMAGES = 10
+NUM_IMAGES = 0
 
 # run with argument to capture set amount of images
 # run without arguments to capture images indefinitely
@@ -31,11 +31,12 @@ def acquire_images(cam, n):
             #image_data = image.GetNDArray()
             #cv2.imwrite(f'img_{i}.png', image_data)
 
-            print(f'capture image {i}')
+            print(f'capture image {counter}')
             cam.EndAcquisition()
 
+            counter += 1
+
             if NUM_IMAGES != 0:
-                counter += 1
                 if counter > NUM_IMAGES:
                     break
 
@@ -57,7 +58,7 @@ def init_camera():
     cam.ExposureAuto.SetValue(PySpin.ExposureAuto_Off)
     #cam.ExposureTime.SetValue(float(100)) #250
     cam.GainAuto.SetValue(PySpin.GainAuto_Off)
-    cam.Gain.SetValue(4)
+    cam.Gain.SetValue(6) #4
     #cam.TriggerDelay.SetValue(0)
     #cam.TriggerMode.SetValue(PySpin.TriggerMode_On)
     return cam, system
