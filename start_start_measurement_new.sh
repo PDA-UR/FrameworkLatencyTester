@@ -1,20 +1,22 @@
 #/bin/bash
 
-ITERATIONS=100
-COMPUTER="pi5"
+ITERATIONS=20
+COMPUTER="geva"
 DISPLAYNAME="strix"
 MOUSE="g300"
-REFRESHRATES=(120 240) # 60
-CONNECTION="HDMI-2"
+#REFRESHRATES=(60 120 240) # 60
+REFRESHRATES=(60) # 60
+CONNECTION="DP-4"
 DISPLAYRESOLUTION="1920x1080"
 #COMPOSITORSTATES=("comp" "nocomp")
 COMPOSITORSTATES=("nocomp")
-#FRAMEWORKS=("JavaSwing" "OPENGL_GLEW" "OPENGL_GLUT")
-FRAMEWORKS=("FLTK" "GLEW" "GLUT" "gtk" "Java2D" "JavaSwing" "pygame" "pyglet" "pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
+FRAMEWORKS=("pygame")
+#FRAMEWORKS=("FLTK" "GLEW" "GLUT" "gtk" "Java2D" "JavaSwing" "pygame" "pyglet" "pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
 #FRAMEWORKS=("xlib")
 #FRAMEWORKS=("SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
-FWPARAMS=("default" "rects")
-DATE="2024-06-04"
+#FWPARAMS=("default" "rects")
+FWPARAMS=("default")
+DATE="2024-07-25"
 
 sigint() {
     exit 0
@@ -29,6 +31,8 @@ activate_compositor () {
 deactivate_compositor () {
 	xfconf-query --channel=xfwm4 --property=/general/use_compositing --type=bool --set false
 }
+
+sudo rmmod lp
 
 for refreshrate in ${REFRESHRATES[@]}; do
 	echo $CONNECTION
