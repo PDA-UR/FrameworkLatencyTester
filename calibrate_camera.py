@@ -3,7 +3,21 @@ import time
 from run_camera import init_camera, acquire_images
 import os
 import numpy as np
-OFFSET = int(os.environ['OFFSET'])
+#import subprocess
+import json
+
+with open('offsets.conf', 'r') as f:
+    offset_data = f.read()
+
+offsets = json.loads(offset_data)
+
+OFFSET = int(offsets['OFFSET'])
+
+#try:
+#    OFFSET = int(os.environ['OFFSET'])
+#except:
+#    OFFSET = 650
+#    os.environ['OFFSET'] = str(OFFSET)
 
 ser = serial.Serial('/dev/ttyUSB0')  # open serial port
 ser.flushInput()
@@ -63,8 +77,16 @@ print(rise, fall)
 
 # in the image, left is bottom and right is top
 # therefore, rise is bottom and fall is top
-os.environ['BORDER_TOP'] = str(fall)
-os.environ['BORDER_BOTTOM'] = str(rise)
+#os.environ['BORDER_TOP'] = str(fall)
+#os.environ['BORDER_BOTTOM'] = str(rise)
+#os.system(f'export BORDER_TOP={fall}')
+#os.system(f'export BORDER_BOTTOM={rise}')
+
+offsets['BORDER_TOP'] = int(fall)
+offsets['BORDER_BOTTOM'] = int(rise)
+
+with open('offsets.conf', 'w') as f: 
+    f.write(json.dumps(offsets))
 
 # kill test program
 ser.close()
