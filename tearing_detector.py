@@ -6,7 +6,7 @@ import json
 #BORDER_TOP = int(os.environ['BORDER_TOP'])
 #BORDER_BOTTOM = int(os.environ['BORDER_BOTTOM'])
 #OFFSET = int(os.environ['OFFSET'])
-THRESHOLD = -50
+THRESHOLD = 30
 
 with open('offsets.conf', 'r') as f:
     offset_data = f.read()
@@ -24,6 +24,7 @@ img = cv2.imread('screen_capture.png', cv2.IMREAD_GRAYSCALE)
 #print(img.shape)
 
 line = img[OFFSET,BORDER_BOTTOM:BORDER_TOP]
+line = np.flip(line)
 
 #print(len(line))
 
@@ -41,11 +42,13 @@ for x in range(len(line)):
 #plt.plot(line)
 #plt.plot(deriv)
 #ax = plt.gca()
-position = np.argmin(deriv)
+
+#print(np.argmax(deriv), np.argmin(deriv))
+position = np.argmax(deriv)
 #print('position', position)
 
-if deriv[position] < THRESHOLD:
+if deriv[position] > THRESHOLD:
     #plt.axvline(position, color='r', dashes=(1, 4))
-    print(1 - (position / len(deriv)))
+    print((position / len(deriv)))
 else:
     print(0.0)
