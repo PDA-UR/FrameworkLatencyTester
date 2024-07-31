@@ -682,7 +682,7 @@ int main(int argc, char** argv)
 
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,vblanks,damage,tearing_offset" << endl;
+    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,tearing_offset,vblanks,damage" << endl;
 
     while(measuring)
     {
@@ -757,7 +757,8 @@ int main(int argc, char** argv)
 		 << bright_time_2 << ","
 		 << xshm_start_time << ","
 		 << xshm_end_time << ","
-		 << yalmd_latency << ",";
+		 << yalmd_latency << ","
+        	 << tearing_offset << ",";
 
 		for (int i = 0; i < vsync_count; i++)
 		{
@@ -776,7 +777,6 @@ int main(int argc, char** argv)
 			}
 		}
 
-        cout << tearing_offset;
 		cout << endl;
 
 		vsync_count = 0;
