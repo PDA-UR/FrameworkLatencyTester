@@ -15,6 +15,7 @@ extern int parportfd;
 extern thread read_parport_thread;
 
 void init_parport();
+void read_partport();
 void cleanup_parport();
 
 #endif

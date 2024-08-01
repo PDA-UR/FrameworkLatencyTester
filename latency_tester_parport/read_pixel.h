@@ -24,7 +24,7 @@ extern uint64_t xshm_start_time;
 extern uint64_t xshm_end_time;
 
 void initXShm();
-void closeXShm()
+void closeXShm();
 unsigned int getPixelColor();
 unsigned int getPixelColorX();
 void wait_for_color(unsigned int color);

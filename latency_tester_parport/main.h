@@ -23,9 +23,17 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+// used by exec
+#include <cstdarg>
+#include <fstream>
+#include <memory>
+#include <cstdio>
+
 // input event
 #define MOUSE_BUTTON_LEFT 272
 #define CLICKED 1
+
+using namespace std;
 
 extern char* testProgramName;
 extern int ITERATIONS;
@@ -53,5 +61,6 @@ void trigger_click(void);
 void trigger_bright(void);
 void trigger_bright_2(void);
 
+string exec(const char* cmd);
 
 #endif

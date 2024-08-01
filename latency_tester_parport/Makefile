@@ -1,7 +1,7 @@
 all:
 	mkdir bin
 	#g++ main.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
-	g++ main.cpp camera.cpp damage.cpp parport.cpp read_pixel.cpp serial.cpp vblank.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
+	g++ main.cpp camera.cpp damage.cpp parport.cpp read_pixel.cpp serial.cpp vblank.cpp util.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
 
 	#g++ read.cpp -lm -O1 -o par_read
 	#g++ click_tester.cpp -lwiringPi -lpthread -o bin/click_tester

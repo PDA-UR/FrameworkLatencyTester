@@ -5,7 +5,7 @@
 #include <GL/glx.h>
 
 extern uint64_t vsync_time[100000];
-extern uint64_t vsync_count = 0;
+extern uint64_t vsync_count;
 extern bool measure_vblank;
 extern thread measure_vblank_thread;
 
