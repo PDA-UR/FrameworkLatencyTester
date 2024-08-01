@@ -3,11 +3,10 @@
 
 using namespace std;
 
-uint64_t vsync_count = 0;
-bool measure_vblank = 0;
-
-void initGLX()
+VblankHandler::VblankHandler()
 {
+    vsync_count = 0;
+    measure_vblank = 0;
     Display *glxDisplay = XOpenDisplay(NULL);
     if (!glxDisplay) {
         cout << "Error: Unable to open X display." << endl;
@@ -36,10 +35,8 @@ void initGLX()
     }
 }
 
-void get_vblanks()
+void VblankHandler::get_vblanks()
 {
-	initGLX();
-
 	unsigned int last_sync_count = 0;
 	uint64_t last_vblank_time = get_micros();
 

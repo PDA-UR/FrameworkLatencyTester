@@ -4,16 +4,20 @@
 #include <GL/gl.h>
 #include <GL/glx.h>
 
-extern uint64_t vsync_time[100000];
-extern uint64_t vsync_count;
-extern bool measure_vblank;
-extern thread measure_vblank_thread;
-
 // Function pointer for glXGetVideoSyncSGI
 typedef int (*GLXGETVIDEOSYNCSGIPROC)(unsigned int *);
-extern GLXGETVIDEOSYNCSGIPROC glXGetVideoSyncSGI;
 
-void initGLX();
-void get_vblanks();
+class VblankHandler {
+    private:
+        GLXGETVIDEOSYNCSGIPROC glXGetVideoSyncSGI;
+        uint64_t vsync_time[100000];
+        uint64_t vsync_count;
+        bool measure_vblank;
+        thread measure_vblank_thread;
+
+    public:
+        VblankHandler();
+        void get_vblanks();
+}
 
 #endif

@@ -3,7 +3,12 @@
 
 using namespace std;
 
-double runTearingDetection()
+CameraHandler::CameraHandler()
+{
+
+}
+
+double CameraHandler::runTearingDetection()
 {
     // todo: add exception handling
     //cout << "tearing detection" << endl;

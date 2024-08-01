@@ -3,7 +3,7 @@
 
 using namespace std;
 
-int init_serial_port()
+SerialHandler::SerialHandler()
 {
 	// https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
 	int port = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK); // O_NDELAY

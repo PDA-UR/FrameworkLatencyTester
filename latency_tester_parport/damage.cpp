@@ -3,11 +3,14 @@
 
 using namespace std;
 
-uint64_t damage_count = 0;
-bool measure_xdamage = 0;
-bool use_xdamage = 0;
+DamageHandler::DamageHandler()
+{
+    damage_count = 0;
+    measure_xdamage = 0;
+    use_xdamage = 0;
+}
 
-void get_xdamage(Window win)
+void DamageHandler::get_xdamage(Window win)
 {
 	if (!use_xdamage)
 	{
@@ -65,7 +68,7 @@ void get_xdamage(Window win)
 	XCloseDisplay(dsp);
 }
 
-int handle_xdamage_error(Display *d, XErrorEvent *e)
+int DamageHandler::handle_xdamage_error(Display *d, XErrorEvent *e)
 {
 	use_xdamage = 0;
 	return 0;

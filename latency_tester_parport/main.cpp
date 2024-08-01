@@ -5,6 +5,7 @@
 #include "read_pixel.h"
 #include "vblank.h"
 #include "damage.h"
+#include "gpio.h"
 
 using namespace std;
 
@@ -46,27 +47,6 @@ void signalHandlerTerm(int sig)
 {
     cleanup();
     exit(sig);
-}
-
-void trigger_click(void)
-{
-	//cout << "click" << endl;
-	state_click = 1;
-	click_time = get_micros();
-}
-
-void trigger_bright(void)
-{
-	//cout << "bright" << endl;
-	state_bright = 1;
-	bright_time = get_micros();
-}
-
-void trigger_bright_2(void)
-{
-	//cout << "bright2" << endl;
-	state_bright_2 = 1;
-	bright_time_2 = get_micros();
 }
 
 int main(int argc, char** argv)

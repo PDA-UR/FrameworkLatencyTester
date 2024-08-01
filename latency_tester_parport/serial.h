@@ -7,10 +7,16 @@ const unsigned char msg_calibrate[] = {'c'};
 const unsigned char msg_measure[] = {'m'};
 const unsigned char msg_toggle[] = {'o'};
 
-extern struct termios tty;
-extern int serial_port;
-extern fd_set read_fds;
 
-int init_serial_port();
+class SerialHandler() {
+    private:
+        struct termios tty;
+        int serial_port;
+        fd_set read_fds;
+
+    public:
+        SerialHandler();
+
+}
 
 #endif

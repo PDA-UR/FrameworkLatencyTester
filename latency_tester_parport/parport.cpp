@@ -1,38 +1,43 @@
+#include <linux/ppdev.h>
+#include <linux/parport.h>
+
 #include "main.h"
 #include "parport.h"
 
 using namespace std;
 
-bool parport_active = 0;
-
-void init_parport()
+Parport::Parport()
 {
-	parportfd = open("/dev/parport0", O_RDWR);
-	//cout << "parport0 fd: " << parportfd << endl;
+    click_pin = 5;
+    bright_pin = 4;
+    bright_pin_2 = 3;
 
-	ioctl(parportfd, PPEXCL);
+	fd = open("/dev/parport0", O_RDWR);
+	//cout << "parport0 fd: " << fd << endl;
+
+	ioctl(fd, PPEXCL);
 	//cout << "excl" << endl;
-	ioctl(parportfd, PPCLAIM);
+	ioctl(fd, PPCLAIM);
 	//cout << "claimed" << endl;
 
 	//int mode = IEEE1284_MODE_EPP; //ECP
 	int mode = IEEE1284_MODE_BYTE;
-	if (ioctl(parportfd, PPSETMODE, &mode) < 0)
+	if (ioctl(fd, PPSETMODE, &mode) < 0)
 	{
 		//cout << "cant set mode" << endl;
-		ioctl(parportfd, PPRELEASE);
+		ioctl(fd, PPRELEASE);
 		//cout << "released" << endl;
-		close(parportfd);
+		close(fd);
 		//cout << "closed" << endl;
 		exit(0);
 	}
 	//cout << "set mode" << endl;
 
-	ioctl(parportfd, PPDATADIR, 1); // nonzero is input
+	ioctl(fd, PPDATADIR, 1); // nonzero is input
 	//cout << "set data dir" << endl;
 }
 
-void read_partport()
+void Parport::read()
 {
 	//cout << "read parport" << endl;
 	//uint64_t last_time = get_micros();
@@ -40,12 +45,12 @@ void read_partport()
 	while(measuring)
 	{
 		//cout << "in measuring parport" << endl;
-		if (parport_active)
+		if (active)
 		{
 			//uint64_t before_time = get_micros();
 			//cout << "lets read" << endl;
-			ioctl(parportfd, PPRSTATUS, &res);
-			//ioctl(parportfd, PPRDATA, &res);
+			ioctl(fd, PPRSTATUS, &res);
+			//ioctl(fd, PPRDATA, &res);
 			//if ((int)res != 0)
 			//{
 				//cout << "par " << (int)res << endl;
@@ -69,11 +74,30 @@ void read_partport()
 	//cout << "end read parport" << endl;
 }
 
-
-
-void cleanup_parport()
+void Parport::trigger_click(void)
 {
-    ioctl(parportfd, PPRELEASE);
-    close(parportfd);
-    read_parport_thread.join();
+	//cout << "click" << endl;
+	state_click = 1;
+	click_time = get_micros();
+}
+
+void Parport::trigger_bright(void)
+{
+	//cout << "bright" << endl;
+	state_bright = 1;
+	bright_time = get_micros();
+}
+
+void Parport::trigger_bright_2(void)
+{
+	//cout << "bright2" << endl;
+	state_bright_2 = 1;
+	bright_time_2 = get_micros();
+}
+
+void Parport::cleanup()
+{
+    ioctl(fd, PPRELEASE);
+    close(fd);
+    read_thread.join();
 }

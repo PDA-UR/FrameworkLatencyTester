@@ -3,11 +3,16 @@
 
 using namespace std;
 
-int X = 200;
-int Y = 200;
+PixelReader::PixelReader(int x, int y)
+{
+    X = x;
+    Y = y;
+
+    initXShm();
+}
 
 // initialize the XShm extension to be able to read one pixel from the screen
-void initXShm()
+void PixelReader::initXShm()
 {
     XWindowAttributes windowAttributes;
     Screen *screen;
@@ -28,21 +33,21 @@ void initXShm()
 
 // detach XShm and clean up memory
 // this has to be called when the program terminates
-void closeXShm()
+void PixelReader::closeXShm()
 {
     XShmDetach(display, &shminfo);
     XDestroyImage(image);
 }
 
 // get pixel at specified position with XShm
-unsigned int getPixelColor()
+unsigned int PixelReader::getPixelColor()
 {
     auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
 
     return image->data[2]; // red channel is enough for us
 }
 
-unsigned int getPixelColorX()
+unsigned int PixelReader::getPixelColorX()
 {
     XColor c;
     XImage *image;
@@ -59,7 +64,7 @@ unsigned int getPixelColorX()
 }
 
 // wait until our pixel has a specified color
-void wait_for_color(unsigned int color)
+void PixelReader::wait_for_color(unsigned int color)
 {
 	unsigned int pixelColor;
 	uint64_t start, end;
@@ -82,7 +87,7 @@ void wait_for_color(unsigned int color)
 	return;
 }
 
-void measure_fw_latency(int input_fd)
+void PixelReader::measure_fw_latency(int input_fd)
 {
     struct input_event inputEvent;
     int err = -1;
@@ -110,9 +115,8 @@ void measure_fw_latency(int input_fd)
     }
 }
 
-
-
-void cleanup_xshm()
+void PixelReader::cleanup()
 {
+    closeXShm();
 
 }
