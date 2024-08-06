@@ -20,6 +20,7 @@ Parport::Parport()
 	ioctl(fd, PPCLAIM);
 	//cout << "claimed" << endl;
 
+    // todo: use exception handling
 	//int mode = IEEE1284_MODE_EPP; //ECP
 	int mode = IEEE1284_MODE_BYTE;
 	if (ioctl(fd, PPSETMODE, &mode) < 0)
@@ -35,6 +36,10 @@ Parport::Parport()
 
 	ioctl(fd, PPDATADIR, 1); // nonzero is input
 	//cout << "set data dir" << endl;
+
+    running = true;
+    read_thread = thread(read);
+    read_thread.run();
 }
 
 void Parport::read()
@@ -42,10 +47,10 @@ void Parport::read()
 	//cout << "read parport" << endl;
 	//uint64_t last_time = get_micros();
 	unsigned char res = 0x00;
-	while(measuring)
+	while(running)
 	{
 		//cout << "in measuring parport" << endl;
-		if (active)
+		if (measure)
 		{
 			//uint64_t before_time = get_micros();
 			//cout << "lets read" << endl;
@@ -74,29 +79,24 @@ void Parport::read()
 	//cout << "end read parport" << endl;
 }
 
-void Parport::trigger_click(void)
+void Parport::trigger_click() : GPIOHandler::trigger_click()
 {
-	//cout << "click" << endl;
-	state_click = 1;
-	click_time = get_micros();
+
 }
 
-void Parport::trigger_bright(void)
+void Parport::trigger_bright() : GPIOHandler::trigger_bright()
 {
-	//cout << "bright" << endl;
-	state_bright = 1;
-	bright_time = get_micros();
+
 }
 
-void Parport::trigger_bright_2(void)
+void Parport::trigger_bright_2() : GPIOHandler::trigger_bright_2()
 {
-	//cout << "bright2" << endl;
-	state_bright_2 = 1;
-	bright_time_2 = get_micros();
+
 }
 
 void Parport::cleanup()
 {
+    running = false;
     ioctl(fd, PPRELEASE);
     close(fd);
     read_thread.join();

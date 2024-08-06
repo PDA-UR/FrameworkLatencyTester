@@ -3,14 +3,18 @@
 
 using namespace std;
 
-DamageHandler::DamageHandler()
+DamageHandler::DamageHandler(Window window_id)
 {
     damage_count = 0;
     measure_xdamage = 0;
     use_xdamage = 0;
+    win = window_id;
+    running = true;
+    measure_xdamage_thread = thread(get_xdamage);
+    measure_xdamage_thread.run();
 }
 
-void DamageHandler::get_xdamage(Window win)
+void DamageHandler::get_xdamage()
 {
 	if (!use_xdamage)
 	{
@@ -45,9 +49,9 @@ void DamageHandler::get_xdamage(Window win)
 	XEvent ev;
 	//XDamageNotifyEvent* ev_dmg;
 
-	while(measuring)
+	while(running)
 	{
-		if (measure_xdamage)
+		if (measure)
 		{
 			XNextEvent(dsp, &ev);
 			if (ev.type == damage_event + XDamageNotify)
@@ -72,4 +76,9 @@ int DamageHandler::handle_xdamage_error(Display *d, XErrorEvent *e)
 {
 	use_xdamage = 0;
 	return 0;
+}
+
+void DamageHandler::cleanup()
+{
+    running = false;
 }

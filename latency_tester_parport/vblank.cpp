@@ -33,6 +33,12 @@ VblankHandler::VblankHandler()
         cout << "Error: GLX_SGI_video_sync extension not supported.\n" << endl;
         return;
     }
+
+    running = true;
+    measure = false;
+
+    measure_vblank_thread = thread(get_vblanks);
+    measure_vblank_thread.run();
 }
 
 void VblankHandler::get_vblanks()
@@ -40,7 +46,7 @@ void VblankHandler::get_vblanks()
 	unsigned int last_sync_count = 0;
 	uint64_t last_vblank_time = get_micros();
 
-	while(measuring)
+	while(running)
 	{
 		unsigned int sync_count;
 		glXGetVideoSyncSGI(&sync_count);
@@ -59,4 +65,10 @@ void VblankHandler::get_vblanks()
 
 		usleep(10);
 	}
+}
+
+void VblankHandler::cleanup()
+{
+    running = false;
+    measure_vblank_thread.join();
 }

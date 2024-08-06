@@ -28,6 +28,13 @@
 #include <fstream>
 #include <memory>
 #include <cstdio>
+#include "parport.h"
+#include "camera.h"
+#include "serial.h"
+#include "read_pixel.h"
+#include "vblank.h"
+#include "damage.h"
+#include "gpio.h"
 
 // input event
 #define MOUSE_BUTTON_LEFT 272

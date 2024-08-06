@@ -14,26 +14,21 @@
 
 class PixelReader {
     private:
-        // variables for xshm
-        Display *display;
-        Window rootWindow;
-        XShmSegmentInfo shminfo;
-        XImage *image;
         int X;
         int Y;
-
-        void initXShm();
-        void closeXShm();
+        bool measure;
         unsigned int getPixelColor();
-        unsigned int getPixelColorX();
+        //unsigned int getPixelColorX();
 
     public:
-        uint64_t xshm_start_time;
-        uint64_t xshm_end_time;
+        uint64_t start_time;
+        uint64_t end_time;
 
         PixelReader(int x, int y);
         void wait_for_color(unsigned int color);
         void measure_fw_latency(int input_fd);
+        void trigger_measurement;
+        void reset();
         void cleanup();
 }
 

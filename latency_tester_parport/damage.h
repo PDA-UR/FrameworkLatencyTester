@@ -7,15 +7,17 @@ class DamageHandler {
     private:
         uint64_t damage_time[1000000];
         uint64_t damage_count;
-        bool measure_xdamage;
-        bool use_xdamage;
-        Window xdamage_win;
+        bool running;
+        Window win;
         thread measure_xdamage_thread;
         int handle_xdamage_error(Display *d, XErrorEvent *e);
 
     public:
-        DamageHandler();
-        void get_xdamage(Window win);
+        bool measure;
+        bool use_xdamage;
+        DamageHandler(Window window_id);
+        void get_xdamage();
+        void cleanup();
 
 }
 

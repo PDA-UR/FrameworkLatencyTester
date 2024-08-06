@@ -3,10 +3,10 @@
 
 using namespace std;
 
-SerialHandler::SerialHandler()
+SerialHandler::SerialHandler(const char* path)
 {
 	// https://blog.mbedded.ninja/programming/operating-systems/linux/linux-serial-ports-using-c-cpp/
-	int port = open("/dev/ttyUSB0", O_RDWR | O_NOCTTY | O_NONBLOCK); // O_NDELAY
+	int port = open(path, O_RDWR | O_NOCTTY | O_NONBLOCK); // O_NDELAY
 
 	if (port < 0)
 	{
@@ -48,6 +48,43 @@ SerialHandler::SerialHandler()
 		cout << "Error: could not set tty attributes." << endl;
 	}
 
-	return port;
+	//return port;
+    serial_port = port;
+
+    if (port >= 0) initialized = true;
 }
 
+void SerialHandler::write(char* msg, int length)
+{
+    write(serial_port, msg, length);
+}
+
+string SerialHandler::read()
+{
+    char serial_read_buffer[256];
+    int serial_read_num_bytes = 0;
+
+    // TODO: fix this using poll() or select()
+    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
+    serial_read_num_bytes = 0;
+
+    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
+    
+    return str(serial_read_buffer);
+}
+
+int SerialHandler::readInt()
+{
+    return stoi(read());
+}
+
+void SerialHandler::flush()
+{
+    int tcflush_result = tcflush(serial_port, TCIOFLUSH);
+    //cout << "tcflush says " << tcflush_result << endl;
+}
+
+void SerialHandler::cleanup()
+{
+    close(serial_port);
+}

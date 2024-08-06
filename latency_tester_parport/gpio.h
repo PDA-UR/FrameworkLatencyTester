@@ -3,7 +3,8 @@
 
 using namespace std;
 
-class GPIO {
+class GPIOHandler
+{
     private:
         int click_pin;
         int bright_pin;
@@ -16,9 +17,10 @@ class GPIO {
         uint64_t click_time;
         uint64_t bright_time;
         uint64_t bright_time_2;
-        bool active; // only used by parport?
+        bool measure; // only used by parport?
         
-        GPIO();
+        GPIOHandler();
+        void reset();
         void cleanup();
 }
 

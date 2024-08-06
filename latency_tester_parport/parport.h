@@ -1,17 +1,18 @@
 #ifndef PARPORT_H
 #define PARPORT_H
 
-class Parport : GPIO {
+class ParportHandler : GPIOHandler {
     private:
-        thread read_thread;
         int fd;
-        void trigger_click(void);
-        void trigger_bright(void);
-        void trigger_bright_2(void);
+        void trigger_click();
+        void trigger_bright();
+        void trigger_bright_2();
+        thread read_thread;
+        void read();
+        bool running;
 
     public:
-        Parport();
-        void read();
+        ParportHandler() : GPIOHandler();
 }
 
 #endif

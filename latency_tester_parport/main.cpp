@@ -2,26 +2,23 @@
 #include "parport.h"
 #include "camera.h"
 #include "serial.h"
-#include "read_pixel.h"
+#include "pixelreader.h"
 #include "vblank.h"
 #include "damage.h"
 #include "gpio.h"
+#include "controller.h"
 
 using namespace std;
 
 int ITERATIONS = 100;
 
-bool state_click = 0;
-bool state_bright = 0;
-bool state_bright_2 = 0;
+//bool state_click = 0;
+//bool state_bright = 0;
+//bool state_bright_2 = 0;
 
-// get current microseconds
-uint64_t get_micros()
-{
-    using namespace chrono;
-    return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
-}
+srand(time(nullptr));
 
+/*
 // do all the cleanup before terminating
 void cleanup()
 {
@@ -34,7 +31,9 @@ void cleanup()
     //cleanup_xshm();
     measure_vblank_thread.join();
 }
+*/
 
+/*
 // make sure we clean up and print current logs when the program is killed
 // log is only printed when terminated, not when interrupted
 void signalHandlerInt(int sig)
@@ -48,17 +47,19 @@ void signalHandlerTerm(int sig)
     cleanup();
     exit(sig);
 }
+*/
 
 int main(int argc, char** argv)
 {
     signal(SIGINT, signalHandlerInt);
     signal(SIGTERM, signalHandlerTerm);
 
-    srand(time(nullptr));
 
     // variables used by evdev to get input events
-    int input_fd = -1;
+    //int input_fd = -1;
     char* event_handle; // path to /dev/input/eventXY for the used input device
+
+    int damage_win = 0;
 
     // check command line parameters
     if(argc < 4)
@@ -79,7 +80,7 @@ int main(int argc, char** argv)
 
     if(argc == 5)
     {
-        xdamage_win = atoi(argv[4]);
+        damage_win = atoi(argv[4]);
 	    use_xdamage = 1;
     }
 
@@ -87,20 +88,14 @@ int main(int argc, char** argv)
     timeout.tv_sec = 0;
     timeout.tv_usec = 200000;
 
-    // should this be after opening the serail port?
+    // should this be after opening the serial port?
     FD_ZERO(&read_fds);
     FD_SET(serial_port, &read_fds);
 
-    initXShm();
+    //initXShm();
 
-    // open input device
-    input_fd = open(event_handle, O_RDONLY | O_NONBLOCK);
 
-    if(input_fd == -1)
-    {
-        cerr << "Could not open input device " << event_handle << endl;
-        exit(SIGABRT);
-    }
+    MeasurementController measurementController = MeasurementController(event_handle, damage_win, ITERATIONS);
 
     // Pin Setup.
     //wiringPiSetupGpio();
@@ -115,79 +110,32 @@ int main(int argc, char** argv)
     //wiringPiISR(bright_pin, INT_EDGE_RISING, &trigger_bright);
     //wiringPiISR(bright_pin_2, INT_EDGE_RISING, &trigger_bright_2);
 
-    init_parport();
+    //init_parport();
 
-    serial_port = init_serial_port();
-
-    if (serial_port < 0)
-    {
-	    cleanup();
-	    exit(SIGABRT);
-    }
-
-    char serial_read_buffer[256];
-    int serial_read_num_bytes = 0;
-
-    usleep(2 * 1000 * 1000);
-    write(serial_port, msg_toggle, 1); 
-    usleep(500 * 1000);
-    write(serial_port, msg_toggle, 1);
-    usleep(500 * 1000);
-
-    write(serial_port, msg_calibrate, 1);
-    //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-
-    // TODO: fix this using poll() or select()
-    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-    serial_read_num_bytes = 0;
-
-    usleep(2 * 1000 * 1000);
-
-    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
-    //cout << "read " << serial_read_num_bytes << " bytes from buffer" << endl;
-    //cout << "calib: " << serial_read_buffer << endl;
-
-    //usleep(10000);
-    //while(read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer)))
-    //{
-    //        usleep(1000);
-    //}
-    //while(read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer)) > 0)
-    //{
-    //        cout << "still reading from port..." << serial_read_buffer << endl;
-    //        usleep(100000);
-    //}
-
-    usleep(1000000);
-    //ioctl(serial_port, TCFLSH, 2);
-    //usleep(10000);
-    int tcflush_result = tcflush(serial_port, TCIOFLUSH);
-    //cout << "tcflush says " << tcflush_result << endl;
-    usleep(10000);
-
-    //while(read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer)) > 0)
-    //{
-    //        cout << "still reading from port..." << serial_read_buffer << endl;
-    //        usleep(100000);
-    //}
+    //serial_port = init_serial_port();
     
-    measuring = 1;
+    //measuring = 1;
 
-    fw_test_thread = thread(measure_fw_latency, input_fd);
+    //fw_test_thread = thread(measure_fw_latency, input_fd);
 
-    usleep(100 * 1000);
+    //usleep(100 * 1000);
 
-    measure_vblank = 0;
-    measure_vblank_thread = thread(get_vblanks);
+    //measure_vblank = 0;
+    //measure_vblank_thread = thread(get_vblanks);
 
-    if (use_xdamage)
-    {
-	    measure_xdamage = 0;
-	    measure_xdamage_thread = thread(get_xdamage, xdamage_win);
-    }
+    //if (use_xdamage)
+    //{
+	//    measure_xdamage = 0;
+	//    measure_xdamage_thread = thread(get_xdamage, xdamage_win);
+    //}
 
-    read_parport_thread = thread(read_partport);
+    //read_parport_thread = thread(read_partport);
 
+
+    // run
+    measurementController.run();
+
+    /*
     usleep(100 * 1000);
 
     cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,tearing_offset,vblanks,damage" << endl;
@@ -209,7 +157,7 @@ int main(int argc, char** argv)
 	    usleep(20000);
 
 	    parport_active = 1;
-	    write(serial_port, msg_measure, 1);
+	    serialHandler.write(msg_measure, 1);
 
 	    //cout << "measure" << endl;
 
@@ -230,19 +178,14 @@ int main(int argc, char** argv)
 	    measure_vblank = 0;
 	    measure_xdamage = 0;
 
-	    serial_read_num_bytes = 0;
-	    memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-
 	    usleep(300000);
-
-	    serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
 
 	    int input_latency = start_time - click_time;
 	    int framework_latency = end_time - start_time;
 	    int display_latency = bright_time - end_time;
 	    int ete_latency = bright_time - click_time;
 	    int sum_latency = input_latency + framework_latency + display_latency;
-	    int yalmd_latency = atoi(serial_read_buffer);
+	    int yalmd_latency = serialHandler.readInt();
 
         double tearing_offset = 0.;
 	//cout << bright_time - bright_time_2 << endl;
@@ -298,6 +241,7 @@ int main(int argc, char** argv)
     }
 
     cleanup();
+    */
 
     return 0;
 }

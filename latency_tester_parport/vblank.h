@@ -13,11 +13,14 @@ class VblankHandler {
         uint64_t vsync_time[100000];
         uint64_t vsync_count;
         bool measure_vblank;
+        bool running;
         thread measure_vblank_thread;
 
     public:
         VblankHandler();
+        bool measure;
         void get_vblanks();
+        void cleanup();
 }
 
 #endif

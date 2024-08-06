@@ -1,6 +1,14 @@
 #include "main.h"
+#include <chrono.h>
 
 using namespace std;
+
+// get current microseconds
+uint64_t get_micros()
+{
+    using namespace chrono;
+    return duration_cast<microseconds>(steady_clock::now().time_since_epoch()).count();
+}
 
 // source: Meritozh on GitHub: https://gist.github.com/meritozh/f0351894a2a4aa92871746bf45879157
 string exec(const char* cmd) 

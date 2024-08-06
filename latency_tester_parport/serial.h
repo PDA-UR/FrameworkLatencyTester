@@ -3,6 +3,7 @@
 
 #include <termios.h>
 
+using namespace std;
 const unsigned char msg_calibrate[] = {'c'};
 const unsigned char msg_measure[] = {'m'};
 const unsigned char msg_toggle[] = {'o'};
@@ -15,7 +16,15 @@ class SerialHandler() {
         fd_set read_fds;
 
     public:
+        bool initialized;
+
         SerialHandler();
+        void write(char* msg, int length);
+        void flush();
+        string read();
+        int readInt();
+
+        void cleanup();
 
 }
 
