@@ -46,6 +46,8 @@ void XShmReader::closeXShm()
 // get pixel at specified position with XShm
 unsigned int XShmReader::getPixelColor()
 {
+    PixelReader::getPixelColor();
+
     auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
 
     return image->data[2]; // red channel is enough for us

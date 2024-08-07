@@ -15,13 +15,13 @@
 
 class MeasurementController {
     private:
-        CameraHandler cameraHandler;
-        DamageHandler damageHandler;
-        SerialHandler serialHandler;
-        VblankHandler vblankHandler;
-        PixelReader pixelReader;
-        GPIOHandler gpioHandler;
-        InputHandler inputHandler;
+        CameraHandler *cameraHandler;
+        DamageHandler *damageHandler;
+        SerialHandler *serialHandler;
+        VblankHandler *vblankHandler;
+        PixelReader *pixelReader;
+        GPIOHandler *gpioHandler;
+        InputHandler *inputHandler;
 
         int iteration;
         int ITERATIONS;

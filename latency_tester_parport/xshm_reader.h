@@ -24,7 +24,7 @@ class XShmReader : public PixelReader
 
     public:
         XShmReader(int x, int y);// : PixelReader(int x, int y);
-        unsigned int getPixelColor(); // : PixelReader::getPixelColor();
+        unsigned int getPixelColor() override; // : PixelReader::getPixelColor();
         void cleanup();
 };
 

@@ -77,8 +77,10 @@ string SerialHandler::readString()
     serial_read_num_bytes = 0;
 
     serial_read_num_bytes = read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer));
+
+    string buffer = serial_read_buffer;
     
-    return str(serial_read_buffer);
+    return buffer;
 }
 
 int SerialHandler::readInt()

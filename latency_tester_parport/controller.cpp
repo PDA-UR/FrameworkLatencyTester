@@ -23,17 +23,17 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
     ITERATIONS = iterations;
 
-    inputHandler = EvdevHandler(event_handle);
+    inputHandler = new EvdevHandler(event_handle);
 
     //inputHandler.register_callback(&MeasurementController::trigger_evdev);
 
     // init parallel port
     
     // serial port
-    SerialHandler serialHandler = SerialHandler("/dev/ttyUSB0");
+    serialHandler = new SerialHandler("/dev/ttyUSB0");
 
     // todo this should be an exception
-    if (!serialHandler.initialized)
+    if (!serialHandler->initialized)
     {
 	    cleanup();
 	    exit(SIGABRT);
@@ -45,39 +45,39 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
     // fw tester
     // todo don't hard code position
-    PixelReader pixelReader = XShmReader(200, 200);
-    inputHandler.register_callback(bind(&PixelReader::measure_fw_latency, &pixelReader));
+    pixelReader = new XShmReader(200, 200);
+    inputHandler->register_callback(bind(&PixelReader::measure_fw_latency, pixelReader));
     //inputHandler.register_callback(&(pixelReader.measure_fw_latency));
 
     // vblank
-    VblankHandler vblankHandler = VblankHandler();
+    vblankHandler = new VblankHandler();
 
 
     // xdamage
     if (damage_win != 0)
     {
-        DamageHandler damageHandler = DamageHandler(damage_win);
+        damageHandler = new DamageHandler(damage_win);
     }
 
     // run parallel port
-    GPIOHandler gpioHandler = ParportHandler();
+    gpioHandler = new ParportHandler();
 
     // camera handler
-    CameraHandler cameraHandler = CameraHandler();
+    cameraHandler = new CameraHandler();
 }
 
 void MeasurementController::calibrate()
 {
     usleep(2 * 1000 * 1000);
-    serialHandler.writeMessage((char*) msg_toggle, 1); 
+    serialHandler->writeMessage((char*) msg_toggle, 1); 
     usleep(500 * 1000);
-    serialHandler.writeMessage((char*) msg_toggle, 1);
+    serialHandler->writeMessage((char*) msg_toggle, 1);
     usleep(500 * 1000);
 
-    serialHandler.writeMessage((char*) msg_calibrate, 1);
+    serialHandler->writeMessage((char*) msg_calibrate, 1);
     //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
     usleep(2 * 1000 * 1000);
-    serialHandler.readString();
+    serialHandler->readString();
 
     //cout << "read " << serial_read_num_bytes << " bytes from buffer" << endl;
     //cout << "calib: " << serial_read_buffer << endl;
@@ -96,7 +96,7 @@ void MeasurementController::calibrate()
     usleep(1000000);
     //ioctl(serial_port, TCFLSH, 2);
     //usleep(10000);
-    serialHandler.flush();
+    serialHandler->flush();
     usleep(10000);
 
     //while(read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer)) > 0)
@@ -116,9 +116,9 @@ void MeasurementController::run()
 
     while(measuring)
     {
-        inputHandler.reset();
-        pixelReader.reset();
-        gpioHandler.reset();
+        inputHandler->reset();
+        pixelReader->reset();
+        gpioHandler->reset();
 	    //click_time = 0;
 	    //pixelReader.start_time = 0;
 	    //pixelReader.end_time = 0;
@@ -128,17 +128,17 @@ void MeasurementController::run()
 	    //state_bright = 0;
 	    //state_bright_2 = 0;
 
-	    vblankHandler.measure = true;
-	    damageHandler.measure = true;
+	    vblankHandler->measure = true;
+	    damageHandler->measure = true;
 	    
 	    usleep(20000);
 
-	    gpioHandler.measure = true;
-	    serialHandler.writeMessage((char*) msg_measure, 1);
+	    gpioHandler->measure = true;
+	    serialHandler->writeMessage((char*) msg_measure, 1);
 
 	    //cout << "measure" << endl;
 
-	    while (inputHandler.input_time == 0 || gpioHandler.click_time == 0 || pixelReader.end_time == 0 || gpioHandler.bright_time == 0 || gpioHandler.bright_time_2 == 0)
+	    while (inputHandler->input_time == 0 || gpioHandler->click_time == 0 || pixelReader->end_time == 0 || gpioHandler->bright_time == 0 || gpioHandler->bright_time_2 == 0)
 	    {
             usleep(10);
             // click
@@ -150,28 +150,28 @@ void MeasurementController::run()
 	    //cout << "after big while" << endl;
 
 	    //parport_active = 0;
-	    gpioHandler.measure = false;
+	    gpioHandler->measure = false;
 	    usleep(20000);
 
 	    //measure_vblank = 0;
 	    //measure_xdamage = 0;
-	    vblankHandler.measure = false;
-	    damageHandler.measure = false;
+	    vblankHandler->measure = false;
+	    damageHandler->measure = false;
 
 	    usleep(300000);
 
-	    int input_latency = inputHandler.input_time - gpioHandler.click_time;
-	    int framework_latency = pixelReader.end_time - pixelReader.start_time;
-	    int display_latency = gpioHandler.bright_time - pixelReader.end_time;
-	    int ete_latency = gpioHandler.bright_time - gpioHandler.click_time;
+	    int input_latency = inputHandler->input_time - gpioHandler->click_time;
+	    int framework_latency = pixelReader->end_time - pixelReader->start_time;
+	    int display_latency = gpioHandler->bright_time - pixelReader->end_time;
+	    int ete_latency = gpioHandler->bright_time - gpioHandler->click_time;
 	    int sum_latency = input_latency + framework_latency + display_latency;
-	    int yalmd_latency = serialHandler.readInt();
+	    int yalmd_latency = serialHandler->readInt();
 
         double tearing_offset = 0.;
 	//cout << bright_time - bright_time_2 << endl;
-        if (gpioHandler.bright_time_2 < gpioHandler.bright_time)
+        if (gpioHandler->bright_time_2 < gpioHandler->bright_time)
         {
-            tearing_offset = cameraHandler.runTearingDetection();
+            tearing_offset = cameraHandler->runTearingDetection();
         }
 
 	    //cout << "return from yalmd " << serial_read_buffer << endl;
@@ -181,37 +181,37 @@ void MeasurementController::run()
 	    //cout << "yalmd:" << yalmd_latency << endl;
 
 	    cout << iteration << ","
-		 << gpioHandler.click_time << ","
-		 << inputHandler.input_time << ","
-		 << pixelReader.end_time << ","
-		 << gpioHandler.bright_time << ","
-		 << gpioHandler.bright_time_2 << ","
-		 << pixelReader.read_start_time << ","
-		 << pixelReader.read_end_time << ","
+		 << gpioHandler->click_time << ","
+		 << inputHandler->input_time << ","
+		 << pixelReader->end_time << ","
+		 << gpioHandler->bright_time << ","
+		 << gpioHandler->bright_time_2 << ","
+		 << pixelReader->read_start_time << ","
+		 << pixelReader->read_end_time << ","
 		 << yalmd_latency << ","
          << tearing_offset << ",";
 
-		for (int i = 0; i < vblankHandler.vsync_count; i++)
+		for (int i = 0; i < vblankHandler->vsync_count; i++)
 		{
-			cout << vblankHandler.vsync_time[i] << ";";
-			vblankHandler.vsync_time[i] = 0;
+			cout << vblankHandler->vsync_time[i] << ";";
+			vblankHandler->vsync_time[i] = 0;
 		}
 
 		cout << ",";
 
-		if (damageHandler.use_xdamage)
+		if (damageHandler->use_xdamage)
 		{
-			for (int i = 0; i < damageHandler.damage_count; i++)
+			for (int i = 0; i < damageHandler->damage_count; i++)
 			{
-				cout << damageHandler.damage_time[i] << ";";
-				damageHandler.damage_time[i] = 0;
+				cout << damageHandler->damage_time[i] << ";";
+				damageHandler->damage_time[i] = 0;
 			}
 		}
 
 		cout << endl;
 
-		vblankHandler.vsync_count = 0;
-		damageHandler.damage_count = 0;
+		vblankHandler->vsync_count = 0;
+		damageHandler->damage_count = 0;
 
 	    iteration++;
 
@@ -245,10 +245,10 @@ void MeasurementController::signalHandlerTerm(int sig)
 void MeasurementController::cleanup()
 {
     measuring = false;
-    serialHandler.cleanup();
-    vblankHandler.cleanup();
-    damageHandler.cleanup();
-    gpioHandler.cleanup();
-    inputHandler.cleanup();
-    pixelReader.cleanup();
+    serialHandler->cleanup();
+    vblankHandler->cleanup();
+    damageHandler->cleanup();
+    gpioHandler->cleanup();
+    inputHandler->cleanup();
+    pixelReader->cleanup();
 }

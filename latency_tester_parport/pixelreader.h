@@ -28,7 +28,7 @@ class PixelReader {
         uint64_t read_end_time;
 
         PixelReader(int x, int y);
-        unsigned int getPixelColor();
+        virtual unsigned int getPixelColor();
         void wait_for_color(unsigned int color);
         void measure_fw_latency();
         void trigger_measurement();

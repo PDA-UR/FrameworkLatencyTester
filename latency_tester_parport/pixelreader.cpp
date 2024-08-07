@@ -74,3 +74,8 @@ void PixelReader::cleanup()
     running = false;
     PixelReader::cleanup();
 }
+
+unsigned int PixelReader::getPixelColor()
+{
+    
+}
