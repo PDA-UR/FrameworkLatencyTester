@@ -1,5 +1,8 @@
 #include "main.h"
 #include "vblank.h"
+#include <stdio.h>
+#include <iostream>
+#include <unistd.h>
 
 using namespace std;
 
@@ -37,8 +40,8 @@ VblankHandler::VblankHandler()
     running = true;
     measure = false;
 
-    measure_vblank_thread = thread(get_vblanks);
-    measure_vblank_thread.run();
+    measure_vblank_thread = thread(&VblankHandler::get_vblanks, this);
+    //measure_vblank_thread.run();
 }
 
 void VblankHandler::get_vblanks()
@@ -56,7 +59,7 @@ void VblankHandler::get_vblanks()
 			uint64_t new_vblank_time = get_micros();
 			last_sync_count = sync_count;
 
-			if (measure_vblank == 1)
+			if (measure == 1)
 			{
 				vsync_time[vsync_count] = new_vblank_time;			
 				vsync_count++;

@@ -1,5 +1,7 @@
 #include "main.h"
-#include "read_pixel.h"
+#include "pixelreader.h"
+
+#include <unistd.h>
 
 using namespace std;
 
@@ -23,8 +25,8 @@ void PixelReader::wait_for_color(unsigned int color)
 
 		if (pixelColor != 0)
 		{
-			start_time = start;
-			end_time = end;
+			read_start_time = start;
+            read_end_time = end;
 			return;
 		}
 
@@ -33,12 +35,13 @@ void PixelReader::wait_for_color(unsigned int color)
 	return;
 }
 
-void PixelReader::measure_fw_latency(int input_fd)
+void PixelReader::measure_fw_latency()
 {
-    struct input_event inputEvent;
-    int err = -1;
+    //struct input_event inputEvent;
+    //int err = -1;
+    running = true;
 
-    while(measuring)
+    while(running)
     {
         if(measure)
         {
@@ -67,6 +70,7 @@ void PixelReader::reset()
 
 void PixelReader::cleanup()
 {
-    closeXShm();
-
+    //closeXShm();
+    running = false;
+    PixelReader::cleanup();
 }

@@ -7,12 +7,12 @@ GPIOHandler::GPIOHandler()
 
 }
 
-GPIOHandler::read()
-{
+//GPIOHandler::read()
+//{
+//
+//}
 
-}
-
-GPIOHandler::reset()
+void GPIOHandler::reset()
 {
     bright_time = 0;
     bright_time_2 = 0;
@@ -21,7 +21,7 @@ GPIOHandler::reset()
     state_bright_2 = 0;
 }
 
-GPIOHandler::cleanup()
+void GPIOHandler::cleanup()
 {
 
 }

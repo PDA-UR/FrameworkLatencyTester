@@ -2,11 +2,18 @@
 #include <linux/parport.h>
 
 #include "main.h"
+#include "gpio.h"
 #include "parport.h"
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/ioctl.h>
+#include <fcntl.h>
+#include <linux/ppdev.h>
+#include <linux/parport.h>
 
 using namespace std;
 
-Parport::Parport()
+ParportHandler::ParportHandler() : GPIOHandler()
 {
     click_pin = 5;
     bright_pin = 4;
@@ -38,11 +45,11 @@ Parport::Parport()
 	//cout << "set data dir" << endl;
 
     running = true;
-    read_thread = thread(read);
-    read_thread.run();
+    read_thread = thread(&ParportHandler::readPins, this);
+    //read_thread.run();
 }
 
-void Parport::read()
+void ParportHandler::readPins()
 {
 	//cout << "read parport" << endl;
 	//uint64_t last_time = get_micros();
@@ -79,22 +86,22 @@ void Parport::read()
 	//cout << "end read parport" << endl;
 }
 
-void Parport::trigger_click() : GPIOHandler::trigger_click()
-{
+//void ParportHandler::trigger_click() : GPIOHandler::trigger_click()
+//{
+//
+//}
+//
+//void ParportHandler::trigger_bright() : GPIOHandler::trigger_bright()
+//{
+//
+//}
+//
+//void ParportHandler::trigger_bright_2() : GPIOHandler::trigger_bright_2()
+//{
+//
+//}
 
-}
-
-void Parport::trigger_bright() : GPIOHandler::trigger_bright()
-{
-
-}
-
-void Parport::trigger_bright_2() : GPIOHandler::trigger_bright_2()
-{
-
-}
-
-void Parport::cleanup()
+void ParportHandler::cleanup()
 {
     running = false;
     ioctl(fd, PPRELEASE);

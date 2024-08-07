@@ -1,14 +1,15 @@
 #ifndef EVDEV_HANDLER_H
 #define EVDEV_HANDLER_H
 
-class EvdevHandler : InputHandler
+class EvdevHandler : public InputHandler
 {
     private:
-        input_fd;
+        int input_fd;
 
     public:
-        EvdevHandler(char* path) : InputHandler();
+        EvdevHandler(char* path);// : InputHandler();
+        void handle_input();
 
-}
+};
 
 #endif

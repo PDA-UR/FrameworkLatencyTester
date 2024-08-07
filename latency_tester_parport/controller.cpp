@@ -1,29 +1,31 @@
 #include "controller.h"
+#include "camera.h"
+#include "damage.h"
+#include "serial.h"
+#include "vblank.h"
+#include "pixelreader.h"
+#include "xshm_reader.h"
+#include "gpio.h"
+#include "parport.h"
+#include "inputhandler.h"
+#include "evdevhandler.h"
 
-/*
-class MeasurementController {
-    pivate:
-        CameraHandler cameraHandler;
-        DamageHandler damageHandler;
-        GPIOHandler gpioHandler;
-        PixelReader pixelReader;
-        SerialHandler serialHandler;
-        VblankHandler vblankHandler;
-
-    public:
-        MeasurementController();
-        void run();
-        void cleanup();
-}
-*/
+#include <signal.h>
+#include <unistd.h>
+#include <stdio.h>
+#include <iostream>
+#include <functional>
 
 MeasurementController::MeasurementController(char *event_handle, int damage_win, int iterations)
 {
+    //signal(SIGINT, signalHandlerInt);
+    //signal(SIGTERM, signalHandlerTerm);
+
     ITERATIONS = iterations;
 
-    InputHandler inputHandler = EvdevHandler(event_handle);
+    inputHandler = EvdevHandler(event_handle);
 
-    inputHandler.register_callback(&trigger_evdev);
+    //inputHandler.register_callback(&MeasurementController::trigger_evdev);
 
     // init parallel port
     
@@ -39,12 +41,12 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
     calibrate();
 
-    measuring = 1;
+    measuring = true;
 
     // fw tester
     // todo don't hard code position
     PixelReader pixelReader = XShmReader(200, 200);
-    inputHandler.register_callback(&(pixelReader.trigger_measurement));
+    inputHandler.register_callback(bind(&PixelReader::measure_fw_latency, &pixelReader));
     //inputHandler.register_callback(&(pixelReader.measure_fw_latency));
 
     // vblank
@@ -67,15 +69,15 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 void MeasurementController::calibrate()
 {
     usleep(2 * 1000 * 1000);
-    serialHandler.write(msg_toggle, 1); 
+    serialHandler.writeMessage((char*) msg_toggle, 1); 
     usleep(500 * 1000);
-    serialHandler.write(msg_toggle, 1);
+    serialHandler.writeMessage((char*) msg_toggle, 1);
     usleep(500 * 1000);
 
-    serialHandler.write(msg_calibrate, 1);
+    serialHandler.writeMessage((char*) msg_calibrate, 1);
     //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
     usleep(2 * 1000 * 1000);
-    serialHandler.read();
+    serialHandler.readString();
 
     //cout << "read " << serial_read_num_bytes << " bytes from buffer" << endl;
     //cout << "calib: " << serial_read_buffer << endl;
@@ -110,7 +112,7 @@ void MeasurementController::run()
 
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,start_time,end_time,bright_time,bright_time_2,xshm_start_time,xshm_end_time,yalmd_latency,tearing_offset,vblanks,damage" << endl;
+    cout << "iteration,click_time,input_time,end_time,bright_time,bright_time_2,read_start_time,read_end_time,yalmd_latency,tearing_offset,vblanks,damage" << endl;
 
     while(measuring)
     {
@@ -132,11 +134,11 @@ void MeasurementController::run()
 	    usleep(20000);
 
 	    gpioHandler.measure = true;
-	    serialHandler.write(msg_measure, 1);
+	    serialHandler.writeMessage((char*) msg_measure, 1);
 
 	    //cout << "measure" << endl;
 
-	    while (pixelReader.start_time == 0 || gpioHandler.click_time == 0 || pixelReader.end_time == 0 || gpioHandler.bright_time == 0 || gpioHandler.bright_time_2 == 0)
+	    while (inputHandler.input_time == 0 || gpioHandler.click_time == 0 || pixelReader.end_time == 0 || gpioHandler.bright_time == 0 || gpioHandler.bright_time_2 == 0)
 	    {
             usleep(10);
             // click
@@ -158,7 +160,7 @@ void MeasurementController::run()
 
 	    usleep(300000);
 
-	    int input_latency = pixelReader.start_time - gpioHandler.click_time;
+	    int input_latency = inputHandler.input_time - gpioHandler.click_time;
 	    int framework_latency = pixelReader.end_time - pixelReader.start_time;
 	    int display_latency = gpioHandler.bright_time - pixelReader.end_time;
 	    int ete_latency = gpioHandler.bright_time - gpioHandler.click_time;
@@ -179,15 +181,15 @@ void MeasurementController::run()
 	    //cout << "yalmd:" << yalmd_latency << endl;
 
 	    cout << iteration << ","
-		 << click_time << ","
-		 << start_time << ","
-		 << end_time << ","
-		 << bright_time << ","
-		 << bright_time_2 << ","
-		 << xshm_start_time << ","
-		 << xshm_end_time << ","
+		 << gpioHandler.click_time << ","
+		 << inputHandler.input_time << ","
+		 << pixelReader.end_time << ","
+		 << gpioHandler.bright_time << ","
+		 << gpioHandler.bright_time_2 << ","
+		 << pixelReader.read_start_time << ","
+		 << pixelReader.read_end_time << ","
 		 << yalmd_latency << ","
-        	 << tearing_offset << ",";
+         << tearing_offset << ",";
 
 		for (int i = 0; i < vblankHandler.vsync_count; i++)
 		{
@@ -208,8 +210,8 @@ void MeasurementController::run()
 
 		cout << endl;
 
-		vsync_count = 0;
-		damage_count = 0;
+		vblankHandler.vsync_count = 0;
+		damageHandler.damage_count = 0;
 
 	    iteration++;
 
@@ -223,7 +225,21 @@ void MeasurementController::run()
 
 void MeasurementController::trigger_evdev()
 {
-	start_time = get_micros();
+    //start_time = get_micros();
+}
+
+// make sure we clean up and print current logs when the program is killed
+// log is only printed when terminated, not when interrupted
+void MeasurementController::signalHandlerInt(int sig)
+{
+    cleanup();
+    exit(sig);
+}
+
+void MeasurementController::signalHandlerTerm(int sig)
+{
+    cleanup();
+    exit(sig);
 }
 
 void MeasurementController::cleanup()

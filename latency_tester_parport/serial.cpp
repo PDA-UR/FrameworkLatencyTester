@@ -1,6 +1,14 @@
 #include "main.h"
 #include "serial.h"
 
+#include <string>
+#include <unistd.h>
+#include <cstring>
+#include <iostream>
+#include <stdio.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+
 using namespace std;
 
 SerialHandler::SerialHandler(const char* path)
@@ -54,12 +62,12 @@ SerialHandler::SerialHandler(const char* path)
     if (port >= 0) initialized = true;
 }
 
-void SerialHandler::write(char* msg, int length)
+void SerialHandler::writeMessage(char* msg, int length)
 {
     write(serial_port, msg, length);
 }
 
-string SerialHandler::read()
+string SerialHandler::readString()
 {
     char serial_read_buffer[256];
     int serial_read_num_bytes = 0;
@@ -75,7 +83,7 @@ string SerialHandler::read()
 
 int SerialHandler::readInt()
 {
-    return stoi(read());
+    return stoi(readString());
 }
 
 void SerialHandler::flush()

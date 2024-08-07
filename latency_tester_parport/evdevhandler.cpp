@@ -1,9 +1,18 @@
+#include "main.h"
 #include "inputhandler.h"
 #include "evdevhandler.h"
 
+#include <cstdlib>
+#include <linux/input.h>
+#include <stdio.h>
+#include <iostream>
+#include <signal.h>
+#include <fcntl.h>
+#include <sys/stat.h>
+
 using namespace std;
 
-EvdevHandler::EvdevHandler(char* path)
+EvdevHandler::EvdevHandler(char* path) : InputHandler()
 {
     // open input device
     input_fd = open(path, O_RDONLY | O_NONBLOCK);
@@ -11,7 +20,7 @@ EvdevHandler::EvdevHandler(char* path)
     // todo this should be an exception
     if(input_fd == -1)
     {
-        cerr << "Could not open input device " << event_handle << endl;
+        cerr << "Could not open input device " << path << endl;
         exit(SIGABRT);
     }
 }
@@ -33,6 +42,7 @@ void EvdevHandler::handle_input()
             inputEvent.code == MOUSE_BUTTON_LEFT &&
             inputEvent.value == CLICKED)
         {
+            input_time = get_micros();
             notify_callbacks();
         }
     }

@@ -1,8 +1,7 @@
 #ifndef READ_PIXEL_H
 #define READ_PIXEL_H
 
-#include <sys/shm.h>
-#include <X11/extensions/XShm.h>
+#include <cstdint>
 
 // position and dimension (should only one pixel!) of the region observed by XShm
 #define WIDTH 1
@@ -14,22 +13,27 @@
 
 class PixelReader {
     private:
+        bool measure;
+        //unsigned int getPixelColorX();
+
+    protected:
         int X;
         int Y;
-        bool measure;
-        unsigned int getPixelColor();
-        //unsigned int getPixelColorX();
+        bool running;
 
     public:
         uint64_t start_time;
         uint64_t end_time;
+        uint64_t read_start_time;
+        uint64_t read_end_time;
 
         PixelReader(int x, int y);
+        unsigned int getPixelColor();
         void wait_for_color(unsigned int color);
-        void measure_fw_latency(int input_fd);
-        void trigger_measurement;
+        void measure_fw_latency();
+        void trigger_measurement();
         void reset();
         void cleanup();
-}
+};
 
 #endif

@@ -1,7 +1,16 @@
 #include "xshm_reader.h"
 #include "pixelreader.h"
 
-XShmReader::XShmReader(int x, int y)
+#include <X11/Xlib.h>
+#include <X11/Xutil.h>
+#include <X11/extensions/Xext.h>
+#include <X11/extensions/XShm.h>
+#include <sys/ipc.h>
+#include <sys/shm.h>
+#include <cstdlib>
+
+
+XShmReader::XShmReader(int x, int y) : PixelReader(x, y)
 {
     initXShm();
 }
@@ -42,6 +51,10 @@ unsigned int XShmReader::getPixelColor()
     return image->data[2]; // red channel is enough for us
 }
 
+void XShmReader::cleanup()// : PixelReader::cleanup()
+{
+    closeXShm();
+}
 /*
 unsigned int PixelReader::getPixelColorX()
 {

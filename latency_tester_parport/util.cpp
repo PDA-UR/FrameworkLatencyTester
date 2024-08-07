@@ -1,5 +1,12 @@
 #include "main.h"
-#include <chrono.h>
+#include <chrono>
+#include <cstdint>
+
+// used by exec
+#include <cstdarg>
+#include <fstream>
+#include <memory>
+#include <cstdio>
 
 using namespace std;
 

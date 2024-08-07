@@ -5,10 +5,13 @@ using namespace std;
 
 class GPIOHandler
 {
-    private:
+    protected:
         int click_pin;
         int bright_pin;
         int bright_pin_2;
+        void trigger_click();
+        void trigger_bright();
+        void trigger_bright_2();
 
     public:
         bool state_click;
@@ -22,6 +25,6 @@ class GPIOHandler
         GPIOHandler();
         void reset();
         void cleanup();
-}
+};
 
 #endif

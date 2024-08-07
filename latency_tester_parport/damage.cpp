@@ -1,17 +1,19 @@
 #include "main.h"
 #include "damage.h"
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
-DamageHandler::DamageHandler(Window window_id)
+DamageHandler::DamageHandler(int window_id)
 {
     damage_count = 0;
-    measure_xdamage = 0;
+    measure = 0;
     use_xdamage = 0;
-    win = window_id;
+    win = (Window)window_id;
     running = true;
-    measure_xdamage_thread = thread(get_xdamage);
-    measure_xdamage_thread.run();
+    measure_xdamage_thread = thread(&DamageHandler::get_xdamage, this);
+    //measure_xdamage_thread.run();
 }
 
 void DamageHandler::get_xdamage()
@@ -23,7 +25,7 @@ void DamageHandler::get_xdamage()
 	//win = 0x3400007;
 	//cout << hex << win << endl;
 
-	XSetErrorHandler(handle_xdamage_error);
+	//XSetErrorHandler(&DamageHandler::handle_xdamage_error, this);
 	Display* dsp = XOpenDisplay(NULL);
 	XWindowAttributes attributes = {0};
 	int damage_event, damage_error, ret;
