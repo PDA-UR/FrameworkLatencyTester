@@ -20,8 +20,21 @@ WinParportHandler::WinParportHandler() : GPIOHandler()
         gfpIsXP64Bit = (lpIsXP64Bit)GetProcAddress(hInpOutDll, "IsXP64Bit");
     }
 
-    // TODO: find address for parport device
-    address = 0;
+    if (gfpIsInpOutDriverOpen())
+    {
+        // TODO: find address for parport device
+        address = 0;
+
+        // TODO (?)
+
+        running = true;
+        read_thread = thread(&WinParportHandler::readPins, this);
+    }
+    else
+    {
+        printf("Unable to load InpOut32 DLL!\n");
+        exit(-1);
+    }
 
     // fd = open("/dev/parport0", O_RDWR);
     // //cout << "parport0 fd: " << fd << endl;
@@ -47,10 +60,6 @@ WinParportHandler::WinParportHandler() : GPIOHandler()
 
     // ioctl(fd, PPDATADIR, 1); // nonzero is input
     // //cout << "set data dir" << endl;
-
-    running = true;
-    read_thread = thread(&WinParportHandler::readPins, this);
-    // //read_thread.run();
 }
 
 void WinParportHandler::readPins()
