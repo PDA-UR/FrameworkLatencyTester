@@ -1,4 +1,4 @@
-#include "win_getpixel_reader.h"
+#include "getpixel_reader.h"
 #include "pixelreader.h"
 
 GetpixelReader::GetpixelReader(int x, int y) : PixelReader(x, y)
