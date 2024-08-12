@@ -15,9 +15,9 @@ using namespace std;
 
 ParportHandler::ParportHandler() : GPIOHandler()
 {
-    click_pin = 5;
+    click_pin = 3;
     bright_pin = 4;
-    bright_pin_2 = 3;
+    bright_pin_2 = 5;
 
 	fd = open("/dev/parport0", O_RDWR);
 	//cout << "parport0 fd: " << fd << endl;
