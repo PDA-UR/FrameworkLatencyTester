@@ -54,10 +54,7 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
 
     // xdamage
-    if (damage_win != 0)
-    {
-        damageHandler = new DamageHandler(damage_win);
-    }
+    damageHandler = new DamageHandler(damage_win);
 
     // run parallel port
     gpioHandler = new ParportHandler();

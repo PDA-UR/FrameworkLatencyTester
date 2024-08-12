@@ -12,7 +12,11 @@ DamageHandler::DamageHandler(int window_id)
     use_xdamage = 0;
     win = (Window)window_id;
     running = true;
-    measure_xdamage_thread = thread(&DamageHandler::get_xdamage, this);
+
+    if (window_id != 0)
+    {
+    	measure_xdamage_thread = thread(&DamageHandler::get_xdamage, this);
+    }
     //measure_xdamage_thread.run();
 }
 
