@@ -2,12 +2,15 @@
 #include <vector>
 #include <thread>
 #include <functional>
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 InputHandler::InputHandler()
 {
     running = 1;
     input_handler_thread = thread(&InputHandler::handle_input, this);
-    //input_handler_thread.run();
 }
 
 void InputHandler::notify_callbacks()
@@ -16,11 +19,6 @@ void InputHandler::notify_callbacks()
     {
         f();
     }
-}
-
-void InputHandler::handle_input()
-{
-
 }
 
 void InputHandler::register_callback(function<void()>f)

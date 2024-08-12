@@ -19,7 +19,7 @@ class InputHandler
         uint64_t input_time;
 
         InputHandler();
-        void handle_input();
+        virtual void handle_input() = 0;
         void register_callback(function<void()>f);
         void cleanup();
         void reset();

@@ -8,7 +8,7 @@ class EvdevHandler : public InputHandler
 
     public:
         EvdevHandler(char* path);// : InputHandler();
-        void handle_input();
+        void handle_input() override;
 
 };
 
