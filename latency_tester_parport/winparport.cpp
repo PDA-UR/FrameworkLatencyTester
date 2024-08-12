@@ -24,8 +24,25 @@ WinParportHandler::WinParportHandler() : GPIOHandler()
     {
         // TODO: find address for parport device
         address = 0;
+        // LPT1 = 0x0378 or 0x03BC
+        // LPT2 = 0x0278 or 0x0378
+        // LPT3 = 0x0278
 
         // TODO (?)
+
+        // BYTEMODEMASK = uint8(1 << 5 | 1 << 6 | 1 << 7)
+        // or zse IEEE stuff (likewise in linux parport)
+        // #define IEEE1284_MODE_BYTE   (1<<0)
+
+        // do i need this stuff??
+        // // put the port into byte mode
+        // _inp = self.port.Inp32(self.base + 0x402)
+        // self.port.Out32(self.base + 0x402, int((_inp & ~BYTEMODEMASK) | (1 << 5)))
+
+        // // Now to make sure the port is in output mode we need to make
+        // // sure that bit 5 of the control register is not set
+        // _inp = self.port.Inp32(self.base + 2)
+        // self.port.Out32(self.base + 2, int(_inp & ~uint8(1 << 5)))
 
         running = true;
         read_thread = thread(&WinParportHandler::readPins, this);
