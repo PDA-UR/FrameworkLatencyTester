@@ -23,6 +23,7 @@ EvdevHandler::EvdevHandler(char* path) : InputHandler()
         cerr << "Could not open input device " << path << endl;
         exit(SIGABRT);
     }
+    //cout << "init evdev handler" << endl;
 }
 
 void EvdevHandler::handle_input()
@@ -43,6 +44,7 @@ void EvdevHandler::handle_input()
             inputEvent.value == CLICKED)
         {
             input_time = get_micros();
+	    //cout << "notify from evdev" << endl;
             notify_callbacks();
         }
     }

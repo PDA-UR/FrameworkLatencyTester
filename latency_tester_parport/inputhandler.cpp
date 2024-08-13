@@ -15,14 +15,18 @@ InputHandler::InputHandler()
 
 void InputHandler::notify_callbacks()
 {
+	//cout << "notify callbacks" << endl;
+	int i = 0;
     for (auto& f : callbacks)
     {
+	    //cout << "cb " << i++ << endl;
         f();
     }
 }
 
 void InputHandler::register_callback(function<void()>f)
 {
+	//cout << "register callback" << endl;
     callbacks.push_back(f);
 }
 

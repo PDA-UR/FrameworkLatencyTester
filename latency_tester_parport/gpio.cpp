@@ -1,6 +1,10 @@
 #include "main.h"
 #include "gpio.h"
 
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 GPIOHandler::GPIOHandler()
 {

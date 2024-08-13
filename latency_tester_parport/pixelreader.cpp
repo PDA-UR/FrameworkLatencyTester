@@ -2,6 +2,8 @@
 #include "pixelreader.h"
 
 #include <unistd.h>
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -16,6 +18,7 @@ void PixelReader::wait_for_color(unsigned int color)
 {
 	unsigned int pixelColor;
 	uint64_t start, end;
+    //cout << "wait for color" << endl;
 
 	while(1)
 	{
@@ -26,7 +29,8 @@ void PixelReader::wait_for_color(unsigned int color)
 		if (pixelColor != 0)
 		{
 			read_start_time = start;
-            read_end_time = end;
+            		read_end_time = end;
+			//cout << "pixelcolor " << pixelColor << endl;
 			return;
 		}
 
@@ -37,14 +41,19 @@ void PixelReader::wait_for_color(unsigned int color)
 
 void PixelReader::measure_fw_latency()
 {
+    //cout << "measure_fw_latency" << endl;
+
     //struct input_event inputEvent;
     //int err = -1;
     running = true;
+    measure = true;
 
     while(running)
     {
+    //cout << "running" << endl;
         if(measure)
         {
+    //cout << "running and measure" << endl;
             measure = false;
 		//cout << "evdev" << endl;
             start_time = get_micros();
@@ -53,12 +62,15 @@ void PixelReader::measure_fw_latency()
 
 		//cout << "white" << endl;
             end_time = get_micros();
+	    running = false;
         }
     }
 }
 
+// never called?
 void PixelReader::trigger_measurement()
 {
+    //cout << "trigger measurement" << endl;
     measure = true;
 }
 
@@ -72,7 +84,7 @@ void PixelReader::cleanup()
 {
     //closeXShm();
     running = false;
-    PixelReader::cleanup();
+    //PixelReader::cleanup();
 }
 
 unsigned int PixelReader::getPixelColor()

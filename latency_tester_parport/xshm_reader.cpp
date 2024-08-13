@@ -8,6 +8,10 @@
 #include <sys/ipc.h>
 #include <sys/shm.h>
 #include <cstdlib>
+#include <stdio.h>
+#include <iostream>
+
+using namespace std;
 
 
 XShmReader::XShmReader(int x, int y) : PixelReader(x, y)
@@ -18,6 +22,7 @@ XShmReader::XShmReader(int x, int y) : PixelReader(x, y)
 // initialize the XShm extension to be able to read one pixel from the screen
 void XShmReader::initXShm()
 {
+	//cout << "init XShm" << endl;
     XWindowAttributes windowAttributes;
     Screen *screen;
 
@@ -33,6 +38,7 @@ void XShmReader::initXShm()
     shminfo.shmaddr = image->data = (char*)shmat(shminfo.shmid, 0, 0);
     shminfo.readOnly = False;
     XShmAttach(display, &shminfo);
+    //cout << "end init xshm" << endl;
 }
 
 // detach XShm and clean up memory
@@ -46,15 +52,21 @@ void XShmReader::closeXShm()
 // get pixel at specified position with XShm
 unsigned int XShmReader::getPixelColor()
 {
-    PixelReader::getPixelColor();
+    //PixelReader::getPixelColor();
 
-    auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
+    //cout << "before xshmgetimage" << endl;
+
+    //auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
+    auto result = XShmGetImage(display, rootWindow, image, 200, 200, 0x00ffffff);
+
+    //cout << "getPixelData " << image->data[2] << endl;
 
     return image->data[2]; // red channel is enough for us
 }
 
 void XShmReader::cleanup()// : PixelReader::cleanup()
 {
+    cout << "cleanup xshm" << endl;
     closeXShm();
 }
 /*

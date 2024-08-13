@@ -141,7 +141,8 @@ void MeasurementController::run()
             // click
             // bright
             // bright_2
-            //cout << start_time << " - " << click_time << " - " << end_time << " - " << bright_time << " - " << bright_time_2 << endl;
+            //cout << inputHandler->input_time << " - " << gpioHandler->click_time << " - " << pixelReader->end_time << " - " << gpioHandler->bright_time << " - " << gpioHandler->bright_time_2 << endl;
+	    //usleep(100000);
 	    }
 
 	    //cout << "after big while" << endl;
@@ -242,10 +243,16 @@ void MeasurementController::signalHandlerTerm(int sig)
 void MeasurementController::cleanup()
 {
     measuring = false;
+    cout << "cleanup serial" << endl;
     serialHandler->cleanup();
+    cout << "cleanup vblank" << endl;
     vblankHandler->cleanup();
+    cout << "cleanup damage" << endl;
     damageHandler->cleanup();
+    cout << "cleanup gpio" << endl;
     gpioHandler->cleanup();
+    cout << "cleanup input" << endl;
     inputHandler->cleanup();
+    cout << "cleanup pixelReader" << endl;
     pixelReader->cleanup();
 }
