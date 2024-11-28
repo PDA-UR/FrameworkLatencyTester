@@ -243,16 +243,16 @@ void MeasurementController::signalHandlerTerm(int sig)
 void MeasurementController::cleanup()
 {
     measuring = false;
-    cout << "cleanup serial" << endl;
+    //cout << "cleanup serial" << endl;
     serialHandler->cleanup();
-    cout << "cleanup vblank" << endl;
+    //cout << "cleanup vblank" << endl;
     vblankHandler->cleanup();
-    cout << "cleanup damage" << endl;
+    //cout << "cleanup damage" << endl;
     damageHandler->cleanup();
-    cout << "cleanup gpio" << endl;
+    //cout << "cleanup gpio" << endl;
     gpioHandler->cleanup();
-    cout << "cleanup input" << endl;
+    //cout << "cleanup input" << endl;
     inputHandler->cleanup();
-    cout << "cleanup pixelReader" << endl;
+    //cout << "cleanup pixelReader" << endl;
     pixelReader->cleanup();
 }
