@@ -9,7 +9,7 @@ DamageHandler::DamageHandler(int window_id)
 {
     damage_count = 0;
     measure = 0;
-    use_xdamage = 0;
+    use_xdamage = 1;
     win = (Window)window_id;
     running = true;
 
@@ -17,7 +17,6 @@ DamageHandler::DamageHandler(int window_id)
     {
     	measure_xdamage_thread = thread(&DamageHandler::get_xdamage, this);
     }
-    //measure_xdamage_thread.run();
 }
 
 void DamageHandler::get_xdamage()
@@ -41,14 +40,17 @@ void DamageHandler::get_xdamage()
 
 		if (ret < 1)
 		{
+			cout << "# xdamage: 0" << endl;
 			use_xdamage = 0;
 			damage_count = 0;
 			return;
 		}
 
+		cout << "# xdamage: 1" << endl;
 		damage = XDamageCreate(dsp, win, XDamageReportNonEmpty);
 	}
 	catch (int e) {
+		cout << "# xdamage: exception" << endl;
 		use_xdamage = 0;
 		return;
 	}

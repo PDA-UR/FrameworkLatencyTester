@@ -7,6 +7,7 @@
 
 // Function pointer for glXGetVideoSyncSGI
 typedef int (*GLXGETVIDEOSYNCSGIPROC)(unsigned int *);
+//GLXGETVIDEOSYNCSGIPROC glXGetVideoSyncSGI;
 
 class VblankHandler {
     private:

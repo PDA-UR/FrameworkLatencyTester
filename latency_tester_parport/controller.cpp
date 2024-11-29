@@ -52,7 +52,6 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
     // vblank
     vblankHandler = new VblankHandler();
 
-
     // xdamage
     damageHandler = new DamageHandler(damage_win);
 
