@@ -2,6 +2,7 @@ import numpy as np
 import cv2
 import os
 import json
+import sys
 
 #BORDER_TOP = int(os.environ['BORDER_TOP'])
 #BORDER_BOTTOM = int(os.environ['BORDER_BOTTOM'])
@@ -18,7 +19,12 @@ OFFSET = int(offsets['OFFSET'])
 BORDER_TOP = int(offsets['BORDER_TOP'])
 BORDER_BOTTOM = int(offsets['BORDER_BOTTOM'])
 
-img = cv2.imread('screen_capture.png', cv2.IMREAD_GRAYSCALE)
+IMAGE_PATH = 'screen_capture.png'
+
+if len(sys.argv) > 1:
+    IMAGE_PATH = sys.argv[1]
+
+img = cv2.imread(IMAGE_PATH, cv2.IMREAD_GRAYSCALE)
 #img = cv2.imread('test_bright_screen.png', cv2.IMREAD_GRAYSCALE)
 
 #print(img.shape)
