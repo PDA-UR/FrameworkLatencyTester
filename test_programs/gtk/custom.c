@@ -9,6 +9,8 @@ float g;
 float b;
 float a;
 
+int rect_count = 0;
+
 static gboolean on_draw_event(GtkWidget *widget, cairo_t *cr, gpointer data)
 {
     draw(cr);
@@ -39,7 +41,7 @@ static void draw(cairo_t *cr)
 
     if(pressed)
     {
-        for (int i = 0; i < 1000; i++)
+        for (int i = 0; i < rect_count; i++)
         {
             r = (float)rand() / RAND_MAX;
             g = (float)rand() / RAND_MAX;
@@ -65,6 +67,11 @@ static void draw(cairo_t *cr)
 
 int main(int argc, char *argv[])
 {
+	if (argc > 1)
+	{
+		rect_count = atoi(argv[1]) - 1;
+	}
+
     GtkWidget *window;
     GtkWidget *drawing_area;
 
