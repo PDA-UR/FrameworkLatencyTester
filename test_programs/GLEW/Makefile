@@ -3,6 +3,7 @@ all:
 	g++ simple.cpp -lGL -lGLEW -lSDL2 -o bin/GLEW_default
 	g++ rects.cpp -lGL -lGLEW -lSDL2 -o bin/GLEW_rects
 	g++ image.cpp -lGL -lGLEW -lSDL2 -lSDL2_image -o bin/GLEW_image
+	g++ custom.cpp -lGL -lGLEW -lSDL2 -lSDL2_image -o bin/GLEW_custom
 
 clean:
 	rm -rf bin
