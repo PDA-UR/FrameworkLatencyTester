@@ -22,7 +22,15 @@ image:
 	rm *.class
 	rm JavaSwing_image.jar
 
-all: simple rects image
+custom:
+	javac JavaSwing_custom.java
+	jar cvmf MANIFEST_CUSTOM.MF JavaSwing_custom.jar *.class
+	mkdir -p bin
+	cat stub.sh JavaSwing_custom.jar > bin/JavaSwing_custom && chmod +x bin/JavaSwing_custom
+	rm *.class
+	rm JavaSwing_custom.jar
+
+all: simple rects image custom
 
 clean:
 	rm -rf bin
