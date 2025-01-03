@@ -2,6 +2,7 @@
 #define MAIN_H
 
 #include <string>
+#include <cstdint>
 
 //#include <iostream>
 //#include <chrono>
