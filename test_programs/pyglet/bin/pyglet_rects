@@ -27,8 +27,8 @@ def create_rects():
     global rects
 
     for i in range(n_rects):
-        x = randint(300, WINDOW_WIDTH - rect_w)
-        y = randint(0, WINDOW_HEIGHT - rect_h)
+        x = randint(300, int(WINDOW_WIDTH - rect_w))
+        y = randint(0, int(WINDOW_HEIGHT - rect_h))
         r = randint(0, 255)
         g = randint(0, 255)
         b = randint(0, 255)
