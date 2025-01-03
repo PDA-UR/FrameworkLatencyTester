@@ -9,6 +9,7 @@
 #include "parport.h"
 #include "inputhandler.h"
 #include "evdevhandler.h"
+#include "udshandler.h"
 
 #include <signal.h>
 #include <unistd.h>
@@ -60,6 +61,9 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
     // camera handler
     cameraHandler = new CameraHandler();
+
+    // uds handler
+    udsHandler = new UDSHandler(UDS_PATH);
 }
 
 void MeasurementController::calibrate()
@@ -108,7 +112,7 @@ void MeasurementController::run()
 
     usleep(100 * 1000);
 
-    cout << "iteration,click_time,input_time,end_time,bright_time,bright_time_2,read_start_time,read_end_time,yalmd_latency,tearing_offset,vblanks,damage" << endl;
+    cout << "iteration,click_time,input_time,end_time,bright_time,bright_time_2,read_start_time,read_end_time,yalmd_latency,tearing_offset,vblanks,damage,comp_start,comp_end" << endl;
 
     while(measuring)
     {
@@ -126,6 +130,7 @@ void MeasurementController::run()
 
 	    vblankHandler->measure = true;
 	    damageHandler->measure = true;
+	    udsHandler->measure = true;
 	    
 	    usleep(20000);
 
@@ -154,6 +159,7 @@ void MeasurementController::run()
 	    //measure_xdamage = 0;
 	    vblankHandler->measure = false;
 	    damageHandler->measure = false;
+	    udsHandler->measure = false;
 
 	    usleep(300000);
 
@@ -205,10 +211,28 @@ void MeasurementController::run()
 			}
 		}
 
+		cout << ",";
+
+		for (int i = 0; i < udsHandler->uds_start_count; i++)
+		{
+			cout << udsHandler->uds_start_time[i] << ";";
+			udsHandler->uds_start_time[i] = 0;
+		}
+
+		cout << ",";
+
+		for (int i = 0; i < udsHandler->uds_end_count; i++)
+		{
+			cout << udsHandler->uds_end_time[i] << ";";
+			udsHandler->uds_end_time[i] = 0;
+		}
+
 		cout << endl;
 
 		vblankHandler->vsync_count = 0;
 		damageHandler->damage_count = 0;
+		udsHandler->uds_start_count = 0;
+		udsHandler->uds_end_count = 0;
 
 	    iteration++;
 
@@ -254,4 +278,6 @@ void MeasurementController::cleanup()
     inputHandler->cleanup();
     //cout << "cleanup pixelReader" << endl;
     pixelReader->cleanup();
+    //cout << "cleanup udsHandler" << endl;
+    udsHandler->cleanup();
 }
