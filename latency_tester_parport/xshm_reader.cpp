@@ -22,19 +22,25 @@ XShmReader::XShmReader(int x, int y) : PixelReader(x, y)
 // initialize the XShm extension to be able to read one pixel from the screen
 void XShmReader::initXShm()
 {
-	//cout << "init XShm" << endl;
+    //cout << "start init XShm" << endl;
     XWindowAttributes windowAttributes;
     Screen *screen;
 
+    //cout << "get display..." << endl;
     display = XOpenDisplay(getenv("DISPLAY"));
+    //cout << "get root..." << endl;
     rootWindow = DefaultRootWindow(display);
+    //cout << "get window attributes..." << endl;
     XGetWindowAttributes(display, rootWindow, &windowAttributes);
     screen = windowAttributes.screen;
 
     // create an image object that will store the pixel data
+    //cout << "create image..." << endl;
     image = XShmCreateImage(display, DefaultVisualOfScreen(screen), DefaultDepthOfScreen(screen), ZPixmap, NULL, &shminfo, WIDTH, HEIGHT);
 
+    //cout << "get shmid..." << endl;
     shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height, IPC_CREAT|0777);
+    //cout << "get shmaddr..." << endl;
     shminfo.shmaddr = image->data = (char*)shmat(shminfo.shmid, 0, 0);
     shminfo.readOnly = False;
     XShmAttach(display, &shminfo);

@@ -24,6 +24,7 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
     ITERATIONS = iterations;
 
     inputHandler = new EvdevHandler(event_handle);
+    //cout << "input handler initialized" << endl;
 
     //inputHandler.register_callback(&MeasurementController::trigger_evdev);
 
@@ -36,30 +37,43 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
     if (!serialHandler->initialized)
     {
 	    cleanup();
+    	    cout << "could not initialize serial handler" << endl;
 	    exit(SIGABRT);
     }
 
+    //cout << "serial handler initialized" << endl;
+
     calibrate();
+    //cout << "calibration finished" << endl;
 
     measuring = true;
 
     // fw tester
     // todo don't hard code position
     pixelReader = new XShmReader(200, 200);
+    //cout << "pixel reader initialized" << endl;
+
     inputHandler->register_callback(bind(&PixelReader::measure_fw_latency, pixelReader));
     //inputHandler.register_callback(&(pixelReader.measure_fw_latency));
+    //cout << "input handler callback registered" << endl;
 
     // vblank
     vblankHandler = new VblankHandler();
+    //cout << "vblank handler initialized" << endl;
 
     // xdamage
     damageHandler = new DamageHandler(damage_win);
+    //cout << "damage handler initialized" << endl;
 
     // run parallel port
     gpioHandler = new ParportHandler();
+    //cout << "gpio handler initialized" << endl;
 
     // camera handler
     cameraHandler = new CameraHandler();
+    //cout << "camera handler initialized" << endl;
+
+    //cout << "everything initialized oh yeah" << endl;
 }
 
 void MeasurementController::calibrate()
