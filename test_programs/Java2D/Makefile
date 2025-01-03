@@ -22,7 +22,15 @@ image:
 	rm *.class
 	rm Java2D_image.jar
 
-all: simple rects image
+custom:
+	javac Java2D_custom.java
+	jar cvmf MANIFEST_CUSTOM.MF Java2D_custom.jar *.class
+	mkdir -p bin
+	cat stub.sh Java2D_custom.jar > bin/Java2D_custom && chmod +x bin/Java2D_custom
+	rm *.class
+	rm Java2D_custom.jar
+
+all: simple rects image custom
 
 clean:
 	rm -rf bin

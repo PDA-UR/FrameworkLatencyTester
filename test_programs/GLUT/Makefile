@@ -4,6 +4,7 @@ all:
 	g++ simple_doublebuf.cpp -lGL -lGLU -lglut -o bin/GLUT_default_doublebuf
 	g++ rects.cpp -lGL -lGLU -lglut -o bin/GLUT_rects
 	g++ image.cpp -lGL -lGLU -lglut -lSOIL -o bin/GLUT_image
+	g++ custom.cpp -lGL -lGLU -lglut -lSOIL -o bin/GLUT_custom
 	
 
 clean:
