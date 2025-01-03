@@ -50,16 +50,29 @@ UDSHandler::UDSHandler(const char* path)
 
 void UDSHandler::handle_uds(void *args)
 {
+	const int message_length = 2;
+
     while(runnning)
     {
 
-		char* uds_signal = (char *) malloc(2 * sizeof(char));
-		int size = recv(client_socket, uds_signal, 2, MSG_WAITALL);
+		char* message = (char *) malloc(message_length * sizeof(char));
+		int size = recv(client_socket, message, message_length, MSG_WAITALL);
 
-		if (size == 2) notify_callbacks();
+		uint64_t current_time = get_micros();
 
-		// hand over to message parser
-		//int result = parseMessage(buffer);
+		if (size == message_length && measure)
+		{
+			if (message[0] == 's') // start rendering in compositor
+			{
+				compositor_start_time[compositor_start_count] = current_time;
+				compositor_start_count++;
+			}
+			else if (message[0] == 'e') // end rendering in compositor
+			{
+				compositor_end_time[compositor_end_count] = current_time;
+				compositor_end_count++;
+			}
+		}
 
 		// for debugging
 		//if(result != 1)
@@ -68,20 +81,6 @@ void UDSHandler::handle_uds(void *args)
 		//}
 	}
 
-}
-
-void UDSHandler::register_callback(function<void()>f)
-{
-    callbacks.push_back(f);
-}
-
-void UDSHandler::notify_callbacks()
-{
-	int i = 0;
-    for (auto& f : callbacks)
-    {
-        f();
-    }
 }
 
 void UDSHandler::cleanup()

@@ -1,26 +1,30 @@
 #ifndef UDS_H
 #define UDS_H
 
-#include <vector>
 #include <thread>
-#include <functional>
+
+#define UDS_PATH "/tmp/latency_tester_socket"
 
 class UDSHandler {
 	private:
 		const int BUFFER_SIZE 1024
 		int fd = -1;
 		char* uds_path;
-		thread uds_thread; 
 		int server_socket, client_socket;
 
 		bool running;
-        vector<function<void()>> callbacks;
-        void notify_callbacks();
+		thread uds_thread; 
 
 	public:
+        uint64_t compositor_start_time[100000];
+        uint64_t compositor_start_count;
+        uint64_t compositor_end_time[100000];
+        uint64_t compositor_end_count;
+
+		bool measure;
+
 		UDSHandler(const char* path);
 		void handle_uds(void *args);
-        void register_callback(function<void()>f);
 		void cleanup();
 }
 
