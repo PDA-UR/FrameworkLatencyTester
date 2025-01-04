@@ -1,4 +1,4 @@
-#include "uds.h"
+#include "udshandler.h"
 
 // TODO: not sure if all of them are needed
 #include <sys/socket.h>
@@ -18,7 +18,8 @@ UDSHandler::UDSHandler(const char* path)
     struct sockaddr_un address;
     const int y = 1;
 
-	int success = server_socket=socket (AF_LOCAL, SOCK_STREAM, 0);
+	//int success = server_socket=socket (AF_LOCAL, SOCK_STREAM, 0);
+	int success = server_socket=socket (AF_LOCAL, SOCK_DGRAM, 0);
 
     unlink(path);
 
@@ -30,18 +31,19 @@ UDSHandler::UDSHandler(const char* path)
                 sizeof (address)) != 0) {
         //printf( "port is not free!\n");
     }
-    listen (server_socket, 5);
-    addrlen = sizeof (struct sockaddr_in);
-    while (1) {
-        client_socket = accept ( server_socket,
-                (struct sockaddr *) &address,
-                &addrlen );
-        if (client_socket > 0)
-        {
-            //printf ("client connected\n");
-            break;
-        }
-    }
+
+    //listen (server_socket, 5);
+    //addrlen = sizeof (struct sockaddr_in);
+    //while (1) {
+    //    client_socket = accept ( server_socket,
+    //            (struct sockaddr *) &address,
+    //            &addrlen );
+    //    if (client_socket > 0)
+    //    {
+    //        //printf ("client connected\n");
+    //        break;
+    //    }
+    //}
 
 	running = 1;
     //pthread_create(&uds_thread, NULL, handle_uds, NULL); 
@@ -56,7 +58,8 @@ void UDSHandler::handle_uds(void *args)
     {
 
 		char* message = (char *) malloc(message_length * sizeof(char));
-		int size = recv(client_socket, message, message_length, MSG_WAITALL);
+		//int size = recv(client_socket, message, message_length, MSG_WAITALL);
+		int size = recv(server_socket, message, message_length, MSG_WAITALL);
 
 		uint64_t current_time = get_micros();
 
@@ -87,6 +90,6 @@ void UDSHandler::cleanup()
 {
 	running = 0;
 	uds_thread.join();
-	close(client_socket);
+	//close(client_socket);
 	close(server_socket);
 }
