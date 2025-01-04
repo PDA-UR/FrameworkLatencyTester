@@ -213,26 +213,26 @@ void MeasurementController::run()
 
 		cout << ",";
 
-		for (int i = 0; i < udsHandler->uds_start_count; i++)
+		for (int i = 0; i < udsHandler->compositor_start_count; i++)
 		{
-			cout << udsHandler->uds_start_time[i] << ";";
-			udsHandler->uds_start_time[i] = 0;
+			cout << udsHandler->compositor_start_time[i] << ";";
+			udsHandler->compositor_start_time[i] = 0;
 		}
 
 		cout << ",";
 
-		for (int i = 0; i < udsHandler->uds_end_count; i++)
+		for (int i = 0; i < udsHandler->compositor_end_count; i++)
 		{
-			cout << udsHandler->uds_end_time[i] << ";";
-			udsHandler->uds_end_time[i] = 0;
+			cout << udsHandler->compositor_end_time[i] << ";";
+			udsHandler->compositor_end_time[i] = 0;
 		}
 
 		cout << endl;
 
 		vblankHandler->vsync_count = 0;
 		damageHandler->damage_count = 0;
-		udsHandler->uds_start_count = 0;
-		udsHandler->uds_end_count = 0;
+		udsHandler->compositor_start_count = 0;
+		udsHandler->compositor_end_count = 0;
 
 	    iteration++;
 

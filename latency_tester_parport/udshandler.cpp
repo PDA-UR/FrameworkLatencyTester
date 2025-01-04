@@ -1,3 +1,4 @@
+#include "main.h"
 #include "udshandler.h"
 
 // TODO: not sure if all of them are needed
@@ -9,6 +10,11 @@
 #include <unistd.h>
 #include <fcntl.h>
 #include <poll.h>
+
+#include <cstdlib>
+//#include <thread>
+
+using namespace std;
 
 // TODO: handle failure
 UDSHandler::UDSHandler(const char* path)
@@ -50,11 +56,11 @@ UDSHandler::UDSHandler(const char* path)
     uds_thread = thread(&UDSHandler::handle_uds, this);
 }
 
-void UDSHandler::handle_uds(void *args)
+void UDSHandler::handle_uds()
 {
 	const int message_length = 2;
 
-    while(runnning)
+    while(running)
     {
 
 		char* message = (char *) malloc(message_length * sizeof(char));

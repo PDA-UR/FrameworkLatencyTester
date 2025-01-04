@@ -7,7 +7,6 @@
 
 class UDSHandler {
 	private:
-		const int BUFFER_SIZE 1024
 		int fd = -1;
 		char* uds_path;
 		int server_socket, client_socket;
@@ -24,8 +23,8 @@ class UDSHandler {
 		bool measure;
 
 		UDSHandler(const char* path);
-		void handle_uds(void *args);
+		void handle_uds();
 		void cleanup();
-}
+};
 
 #endif
