@@ -1,7 +1,7 @@
 all:
 	mkdir bin
 	#g++ main.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
-	g++ main.cpp camera.cpp controller.cpp damage.cpp evdevhandler.cpp gpio.cpp inputhandler.cpp parport.cpp pixelreader.cpp serial.cpp vblank.cpp xshm_reader.cpp util.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
+	g++ main.cpp camera.cpp controller.cpp damage.cpp evdevhandler.cpp gpio.cpp inputhandler.cpp parport.cpp pixelreader.cpp serial.cpp vblank.cpp xshm_reader.cpp util.cpp udshandler.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o bin/latency_tester
 
 	#g++ read.cpp -lm -O1 -o par_read
 	#g++ click_tester.cpp -lwiringPi -lpthread -o bin/click_tester
@@ -11,7 +11,7 @@ all:
 debug:
 	mkdir debug
 	#g++ -g main.cpp -lGL -lX11 -lXext -lXdamage -lwiringPi -lpthread -o debug/latency_tester
-	g++ -g main.cpp camera.cpp controller.cpp damage.cpp evdevhandler.cpp gpio.cpp inputhandler.cpp parport.cpp pixelreader.cpp serial.cpp vblank.cpp xshm_reader.cpp util.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o debug/latency_tester
+	g++ -g main.cpp camera.cpp controller.cpp damage.cpp evdevhandler.cpp gpio.cpp inputhandler.cpp parport.cpp pixelreader.cpp serial.cpp vblank.cpp xshm_reader.cpp util.cpp udshandler.cpp -lGL -lX11 -lXext -lXdamage -lpthread -lm -O1 -o debug/latency_tester
 
 clean:
 	rm -rf bin
