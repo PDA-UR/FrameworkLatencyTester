@@ -13,6 +13,8 @@
 
 #include <cstdlib>
 //#include <thread>
+#include <stdio.h>
+#include <iostream>
 
 using namespace std;
 
@@ -23,6 +25,7 @@ UDSHandler::UDSHandler(const char* path)
     ssize_t size;
     struct sockaddr_un address;
     const int y = 1;
+    uds_path = path;
 
 	//int success = server_socket=socket (AF_LOCAL, SOCK_STREAM, 0);
 	int success = server_socket=socket (AF_LOCAL, SOCK_DGRAM, 0);
@@ -36,7 +39,17 @@ UDSHandler::UDSHandler(const char* path)
                 (struct sockaddr *) &address,
                 sizeof (address)) != 0) {
         //printf( "port is not free!\n");
+    cout << "#port is not free" << endl;
     }
+
+    if (chmod(path, 0777) == -1)
+    {
+	cout << "#failed to chmod" << endl;
+    }
+
+
+	//system("chmod 755 yourExeFile")
+
 
     //listen (server_socket, 5);
     //addrlen = sizeof (struct sockaddr_in);
@@ -51,6 +64,7 @@ UDSHandler::UDSHandler(const char* path)
     //    }
     //}
 
+    //cout << "finished init uds on " << path << endl;
 	running = 1;
     //pthread_create(&uds_thread, NULL, handle_uds, NULL); 
     uds_thread = thread(&UDSHandler::handle_uds, this);
@@ -60,16 +74,26 @@ void UDSHandler::handle_uds()
 {
 	const int message_length = 2;
 
+	//cout << "handle_uds() " << running << " " << server_socket << endl;
+
     while(running)
     {
+	    //cout << "running" << endl;
 
-		char* message = (char *) malloc(message_length * sizeof(char));
+
+		//char* message = (char *) malloc(message_length * sizeof(char));
+		char message[message_length];
 		//int size = recv(client_socket, message, message_length, MSG_WAITALL);
-		int size = recv(server_socket, message, message_length, MSG_WAITALL);
+		//int size = recv(server_socket, message, message_length + 1, MSG_WAITALL);
+		int size = recv(server_socket, message, message_length, 0);
+		//int size = recvfrom(server_socket, message, message_length, 0, nullptr, nullptr);
+
+		//cout << "received message: " << size << " " << message << endl;
 
 		uint64_t current_time = get_micros();
 
-		if (size == message_length && measure)
+		//if (size == message_length && measure)
+		if (size > 0 && measure)
 		{
 			if (message[0] == 's') // start rendering in compositor
 			{
@@ -90,6 +114,7 @@ void UDSHandler::handle_uds()
 		//}
 	}
 
+	//cout << "end handle_uds()" << endl;
 }
 
 void UDSHandler::cleanup()
@@ -98,4 +123,5 @@ void UDSHandler::cleanup()
 	uds_thread.join();
 	//close(client_socket);
 	close(server_socket);
+        unlink(uds_path);
 }

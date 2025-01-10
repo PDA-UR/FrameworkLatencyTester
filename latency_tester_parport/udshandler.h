@@ -8,7 +8,7 @@
 class UDSHandler {
 	private:
 		int fd = -1;
-		char* uds_path;
+		const char* uds_path;
 		int server_socket, client_socket;
 
 		bool running;
