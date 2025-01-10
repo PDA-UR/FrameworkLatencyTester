@@ -12,6 +12,7 @@
 #include "parport.h"
 #include "inputhandler.h"
 #include "evdevhandler.h"
+#include "udshandler.h"
 
 class MeasurementController {
     private:
@@ -22,6 +23,7 @@ class MeasurementController {
         PixelReader *pixelReader;
         GPIOHandler *gpioHandler;
         InputHandler *inputHandler;
+        UDSHandler *udsHandler;
 
         int iteration;
         int ITERATIONS;
