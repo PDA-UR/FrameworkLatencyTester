@@ -15,10 +15,10 @@ class UDSHandler {
 		thread uds_thread; 
 
 	public:
-        uint64_t compositor_start_time[100000];
-        uint64_t compositor_start_count;
-        uint64_t compositor_end_time[100000];
-        uint64_t compositor_end_count;
+		uint64_t compositor_start_time[100000];
+		uint64_t compositor_start_count;
+		uint64_t compositor_end_time[100000];
+		uint64_t compositor_end_count;
 
 		bool measure;
 
