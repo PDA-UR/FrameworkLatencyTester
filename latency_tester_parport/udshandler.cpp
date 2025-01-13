@@ -15,6 +15,7 @@
 //#include <thread>
 #include <stdio.h>
 #include <iostream>
+#include <cstdio>
 
 using namespace std;
 
@@ -28,8 +29,10 @@ UDSHandler::UDSHandler(const char* path)
 	uds_path = path;
 
 	int success = server_socket=socket (AF_LOCAL, SOCK_DGRAM, 0);
+	fcntl(server_socket, F_SETFL, O_NONBLOCK); // set socket non-blocking to avoid lock during cleanup
 
-	unlink(path);
+	//unlink(path);
+	remove(uds_path);
 
 	address.sun_family = AF_LOCAL;
 	strcpy(address.sun_path, path);
@@ -80,7 +83,8 @@ void UDSHandler::handle_uds()
 void UDSHandler::cleanup()
 {
 	running = 0;
-	uds_thread.join();
 	close(server_socket);
-	unlink(uds_path);
+	uds_thread.join();
+	remove(uds_path);
+	//unlink(uds_path);
 }
