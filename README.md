@@ -90,3 +90,7 @@ pip3 install Pillow
 
  * Spinnaker SDK for FLIR camera (needs Python 3.10)
  * access to the parallel port (have to rmmod the lp module)
+
+### For Raylib
+
+libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
