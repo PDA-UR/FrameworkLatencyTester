@@ -85,3 +85,7 @@ pip3 install pygame
 pip3 install pyglet
 pip3 install Pillow
 ```
+
+### For Raylib
+
+libasound2-dev mesa-common-dev libx11-dev libxrandr-dev libxi-dev xorg-dev libgl1-mesa-dev libglu1-mesa-dev
