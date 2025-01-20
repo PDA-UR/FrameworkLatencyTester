@@ -85,3 +85,8 @@ pip3 install pygame
 pip3 install pyglet
 pip3 install Pillow
 ```
+
+### Other Requirements
+
+ * Spinnaker SDK for FLIR camera (needs Python 3.10)
+ * access to the parallel port (have to rmmod the lp module)
