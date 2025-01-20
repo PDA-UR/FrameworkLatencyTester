@@ -1,38 +1,80 @@
 #/bin/bash
 
-ITERATIONS=20
+DATE="2025-01-20_raylib"
+
+PICOM="/home/latency/picom/build/src/picom"
+
+sudo rm "/tmp/latency_tester_socket"
+
 COMPUTER="geva"
 DISPLAYNAME="strix"
 MOUSE="g300"
-#REFRESHRATES=(60 120 240) # 60
-REFRESHRATES=(60) # 60
-CONNECTION="DP-4"
+CONNECTION="DP-0"
+SECONDSCREEN="HDMI-0"
 DISPLAYRESOLUTION="1920x1080"
-#COMPOSITORSTATES=("comp" "nocomp")
-COMPOSITORSTATES=("nocomp")
-FRAMEWORKS=("pygame")
+
+ITERATIONS=200
+ITERATIONS=50
+REFRESHRATES=(60 120 240) # 60
+#REFRESHRATES=(240) # 60
+#COMPOSITORSTATES=("compton_hybrid" "compton_hybrid_vsync")
+#COMPOSITORSTATES=("nocomp" "picom" "picom_vsync" "picom_hybrid" "picom_hybrid_vsync")
+#COMPOSITORSTATES=("nocomp" "picom" "picom_vsync") # "picom_hybrid" "picom_hybrid_vsync")
+COMPOSITORSTATES=("picom" "picom_vsync" "nocomp") # "picom_hybrid" "picom_hybrid_vsync")
+#COMPOSITORSTATES=("nocomp" "picom_hybrid" "picom_hybrid_vsync")
+#COMPOSITORSTATES=("compton_hybrid")
+#COMPOSITORSTATES=("nocomp" "comp" "compton" "compton_vsync")
 #FRAMEWORKS=("FLTK" "GLEW" "GLUT" "gtk" "Java2D" "JavaSwing" "pygame" "pyglet" "pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
-#FRAMEWORKS=("xlib")
-#FRAMEWORKS=("SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
-#FWPARAMS=("default" "rects")
+#FRAMEWORKS=("pygame" "pyglet" "Java2D")
+#FRAMEWORKS=("FLTK" "GLUT" "gtk" "Java2D" "JavaSwing" "pygame" "pyglet" "pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython")
+#FRAMEWORKS=("pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython")
+#FRAMEWORKS=("xcb" "xlib")
+#FRAMEWORKS=("FLTK" "GLUT" "gtk" "Java2D" "JavaSwing" "pyglet" "pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
+#FRAMEWORKS=("pyqt5" "pyqt6" "Qt5" "SDL2-opengl" "SDL2-opengles2" "SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
+FRAMEWORKS=("raylib")
+FWPARAMS=("default" "rects")
 FWPARAMS=("default")
-DATE="2024-07-25"
+RECTCOUNTS=(1 10 100 1000)
+
+#COMPOSITORTYPE="xfwm"
+
+#REFRESHRATES=(120 240) # 60
+
+#ITERATIONS=5
+#REFRESHRATES=(60) # 60
+##COMPOSITORSTATES=("nocomp")
+#FRAMEWORKS=("pygame" "SDL2-opengl" "xcb")
+##FRAMEWORKS=("xlib")
+##FRAMEWORKS=("SDL2-software" "tkinter" "wxpython" "xcb" "xlib")
+#FWPARAMS=("default")
 
 sigint() {
-    exit 0
+	# turn second screen back on
+	xrandr --output $SECONDSCREEN --same-as $CONNECTION
+	exit 0
 }
 
 trap sigint INT
 
 activate_compositor () {
+	killall -9 compton
 	xfconf-query --channel=xfwm4 --property=/general/use_compositing --type=bool --set true
+	echo "activated compositor"
 }
 
 deactivate_compositor () {
 	xfconf-query --channel=xfwm4 --property=/general/use_compositing --type=bool --set false
+	killall -9 compton
+	killall -9 picom
+	echo "deactivated compositor"
 }
 
-sudo rmmod lp
+#sudo rmmod lp
+
+# turn off second screen
+xrandr --output $SECONDSCREEN --off
+
+killall -9 compton
 
 for refreshrate in ${REFRESHRATES[@]}; do
 	echo $CONNECTION
@@ -41,23 +83,56 @@ for refreshrate in ${REFRESHRATES[@]}; do
 	sleep 5s
 
 	for comp in ${COMPOSITORSTATES[@]}; do
+		deactivate_compositor
 		if [ $comp == "comp" ]
 		then
 			activate_compositor
+		elif [ $comp == "picom" ]
+		then
+			$PICOM -b --backend glx --no-vsync
+		elif [ $comp == "picom_vsync" ]
+		then
+			$PICOM -b --backend glx --vsync
+		elif [ $comp == "picom_hybrid" ]
+		then
+			compton -b --backend xr_glx_hybrid --no-vsync
+		elif [ $comp == "picom_hybrid_vsync" ]
+		then
+			compton -b --backend xr_glx_hybrid --vsync
+		elif [ $comp == "compton" ]
+		then
+			compton -b --backend glx --vsync none
+		elif [ $comp == "compton_vsync" ]
+		then
+			compton -b --backend glx --vsync opengl-swc
+		elif [ $comp == "compton_hybrid" ]
+		then
+			compton -b --backend xr_glx_hybrid --vsync none
+		elif [ $comp == "compton_hybrid_vsync" ]
+		then
+			compton -b --backend xr_glx_hybrid --vsync opengl-swc
 		else
 			deactivate_compositor
 		fi
 		DATA_DIR="${DATE}_${COMPUTER}_${MOUSE}_${DISPLAYNAME}_${refreshrate}_${comp}"
 		echo $DATA_DIR
 		for fw in ${FRAMEWORKS[@]}; do
-			for param in ${FWPARAMS[@]}; do
-				echo "$fw $param"
-				./start_measurement_new.sh $fw $param $ITERATIONS $DATA_DIR
+			for rectcount in ${RECTCOUNTS[@]}; do
+				echo "$fw $rectcount"
+				./start_measurement_new.sh $fw $rectcount $ITERATIONS $DATA_DIR
 			done
+			#for param in ${FWPARAMS[@]}; do
+			#	echo "$fw $param"
+			#	./start_measurement_new.sh $fw $param $ITERATIONS $DATA_DIR
+			#done
 		done
 
 	done
 done
+
+# turn second screen back on
+#xrandr --output $SECONDSCREEN --same-as $CONNECTION
+xrandr --output $SECONDSCREEN --mode 1920x1080
 
 exit 0
 

@@ -5,7 +5,7 @@ TEST_PARAMS=$2
 ITERATIONS=$3
 DATA_SUBDIRECTORY=$4
 
-PATH_TEST_PROGRAM="test_programs/$TEST_PROGRAM/bin/${TEST_PROGRAM}_${TEST_PARAMS}"
+PATH_TEST_PROGRAM="test_programs/$TEST_PROGRAM/bin/${TEST_PROGRAM}_custom ${TEST_PARAMS}"
 PATH_DATA="data/$DATA_SUBDIRECTORY/${TEST_PROGRAM}_${TEST_PARAMS}"
 
 mkdir "data/$DATA_SUBDIRECTORY" 2> /dev/null
@@ -46,7 +46,8 @@ echo "$TEST_PROGRAM $TEST_PARAMS $WINID"
 
 sleep "1s"
 
-sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event10" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+#sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event10" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
 #sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 29360135 > "${PATH_DATA}.csv"
 
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 1 "${PATH_DATA}_fw.csv"
@@ -54,3 +55,5 @@ sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PRO
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 0 "${PATH_DATA}_nofw.csv"
 
 kill -9 $PID_TEST_PROGRAM
+
+echo "finished measurement"
