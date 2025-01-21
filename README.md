@@ -77,6 +77,7 @@ sudo apt install libsdl2-dev
 sudo apt install libsdl2-image-dev
 sudo apt install qtbase5-dev
 sudo apt install qt5-qmake
+sudo apt install libsfml-dev
 
 pip3 install wxPython
 pip3 install pyqt5
