@@ -36,7 +36,10 @@ xcb:
 sfml:
 	$(MAKE) -C SFML/ all
 
-all: glew glut sdl2 gtk swing qt5 java2d FLTK xlib xcb sfml
+raylib:
+	$(MAKE) -C raylib/ all
+
+all: glew glut sdl2 gtk swing qt5 java2d FLTK xlib xcb sfml raylib
 
 clean:
 	$(MAKE) -C SDL2-software/ clean
@@ -52,3 +55,4 @@ clean:
 	$(MAKE) -C xlib/ clean
 	$(MAKE) -C xcb/ clean
 	$(MAKE) -C SFML/ clean
+	$(MAKE) -C raylib/ clean
