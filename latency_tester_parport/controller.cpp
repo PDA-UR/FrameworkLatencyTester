@@ -88,7 +88,8 @@ void MeasurementController::calibrate()
     serialHandler->writeMessage((char*) msg_calibrate, 1);
     //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
     usleep(2 * 1000 * 1000);
-    serialHandler->readString();
+    //serialHandler->readString();
+    cerr << serialHandler->readString() << endl;
 
     //cout << "read " << serial_read_num_bytes << " bytes from buffer" << endl;
     //cout << "calib: " << serial_read_buffer << endl;
