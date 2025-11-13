@@ -182,12 +182,13 @@ void MeasurementController::run()
 	    int sum_latency = input_latency + framework_latency + display_latency;
 	    int yalmd_latency = serialHandler->readInt();
 
-        double tearing_offset = 0.;
-	//cout << bright_time - bright_time_2 << endl;
-        if (gpioHandler->bright_time_2 < gpioHandler->bright_time)
-        {
+	    double tearing_offset = 0.;
+	    //cout << bright_time - bright_time_2 << endl;
+	    //if (gpioHandler->bright_time_2 < gpioHandler->bright_time)
+	    //{
+	    //    tearing_offset = cameraHandler->runTearingDetection();
+	    //}
             tearing_offset = cameraHandler->runTearingDetection();
-        }
 
 	    //cout << "return from yalmd " << serial_read_buffer << endl;
 	    //cout << "click to bright1: " << (int)(bright_time - click_time) << endl;
