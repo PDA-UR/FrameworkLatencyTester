@@ -1,10 +1,11 @@
 import serial
 import time
-from run_camera import init_camera, acquire_images
+from run_camera import init_camera, init_camera_4k, acquire_images
 import os
 import numpy as np
 #import subprocess
 import json
+from matplotlib import pyplot as plt
 
 with open('offsets.conf', 'r') as f:
     offset_data = f.read()
@@ -28,7 +29,8 @@ time.sleep(1)
 
 
 # init camera
-cam, system = init_camera()
+#cam, system = init_camera()
+cam, system = init_camera_4k()
 
 # click
 print('click')
@@ -41,7 +43,8 @@ print('capture image')
 cam.BeginAcquisition()
 print('send p to yalmd')
 ser.write('p'.encode())
-time.sleep(1)
+time.sleep(0.002)
+#time.sleep(1)
 print('getNextImage')
 image = cam.GetNextImage()
 
@@ -61,7 +64,18 @@ print('find borders')
 line = img[OFFSET,:]
 print(len(line))
 
+
+
 deriv = []
+l = []
+
+for x in range(len(line)):
+    # hack to counteract influence of moiree
+    if line[x] >= 100:
+        l.append(100)
+    else:
+        l.append(line[x])
+line = l
 
 for x in range(len(line)):
     if x == 0:
@@ -92,3 +106,7 @@ with open('offsets.conf', 'w') as f:
 ser.close()
 del cam
 system.ReleaseInstance()
+
+plt.plot(line)
+plt.plot(deriv)
+plt.show()
