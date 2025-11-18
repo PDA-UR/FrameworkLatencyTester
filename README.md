@@ -86,6 +86,8 @@ pip3 install pyqt6
 pip3 install pygame
 pip3 install pyglet
 pip3 install Pillow
+pip3 install PyOpenGL
+pip3 install glfw
 ```
 
 ### Other Requirements
