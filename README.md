@@ -90,6 +90,8 @@ pip3 install PyOpenGL
 pip3 install glfw
 ```
 
+Also, download lwjgl3 and place jars in .local/share/lwjgl3/jars and natives in .local/share/lwjgl3/natives (https://www.lwjgl.org/customize).
+
 ### Other Requirements
 
  * Spinnaker SDK for FLIR camera (needs Python 3.10)
