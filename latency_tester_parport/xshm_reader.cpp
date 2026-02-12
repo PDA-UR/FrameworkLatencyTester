@@ -22,29 +22,29 @@ XShmReader::XShmReader(int x, int y) : PixelReader(x, y)
 // initialize the XShm extension to be able to read one pixel from the screen
 void XShmReader::initXShm()
 {
-    //cout << "start init XShm" << endl;
+    //cerr << "start init XShm" << endl;
     XWindowAttributes windowAttributes;
     Screen *screen;
 
-    //cout << "get display..." << endl;
+    //cerr << "get display..." << endl;
     display = XOpenDisplay(getenv("DISPLAY"));
-    //cout << "get root..." << endl;
+    //cerr << "get root..." << endl;
     rootWindow = DefaultRootWindow(display);
-    //cout << "get window attributes..." << endl;
+    //cerr << "get window attributes..." << endl;
     XGetWindowAttributes(display, rootWindow, &windowAttributes);
     screen = windowAttributes.screen;
 
     // create an image object that will store the pixel data
-    //cout << "create image..." << endl;
+    //cerr << "create image..." << endl;
     image = XShmCreateImage(display, DefaultVisualOfScreen(screen), DefaultDepthOfScreen(screen), ZPixmap, NULL, &shminfo, WIDTH, HEIGHT);
 
-    //cout << "get shmid..." << endl;
+    //cerr << "get shmid..." << endl;
     shminfo.shmid = shmget(IPC_PRIVATE, image->bytes_per_line * image->height, IPC_CREAT|0777);
-    //cout << "get shmaddr..." << endl;
+    //cerr << "get shmaddr..." << endl;
     shminfo.shmaddr = image->data = (char*)shmat(shminfo.shmid, 0, 0);
     shminfo.readOnly = False;
     XShmAttach(display, &shminfo);
-    //cout << "end init xshm" << endl;
+    //cerr << "end init xshm" << endl;
 }
 
 // detach XShm and clean up memory
@@ -60,19 +60,19 @@ unsigned int XShmReader::getPixelColor()
 {
     //PixelReader::getPixelColor();
 
-    //cout << "before xshmgetimage" << endl;
+    //cerr << "before xshmgetimage" << endl;
 
     //auto result = XShmGetImage(display, rootWindow, image, X, Y, 0x00ffffff);
     auto result = XShmGetImage(display, rootWindow, image, 200, 200, 0x00ffffff);
 
-    //cout << "getPixelData " << image->data[2] << endl;
+    //cerr << "getPixelData " << image->data[2] << endl;
 
     return image->data[2]; // red channel is enough for us
 }
 
 void XShmReader::cleanup()// : PixelReader::cleanup()
 {
-    cout << "cleanup xshm" << endl;
+    cerr << "cleanup xshm" << endl;
     closeXShm();
 }
 /*
