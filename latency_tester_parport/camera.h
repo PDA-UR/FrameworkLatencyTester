@@ -7,6 +7,7 @@ class CameraHandler {
     public:
         CameraHandler();
         double runTearingDetection();
+	void storeTearingData(int id);
 };
 
 #endif
