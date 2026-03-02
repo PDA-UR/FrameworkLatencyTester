@@ -79,7 +79,7 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
 
 void MeasurementController::calibrate()
 {
-    usleep(2 * 1000 * 1000);
+    usleep(1 * 1000 * 1000);
     serialHandler->writeMessage((char*) msg_toggle, 1); 
     usleep(500 * 1000);
     serialHandler->writeMessage((char*) msg_toggle, 1);
@@ -87,7 +87,7 @@ void MeasurementController::calibrate()
 
     serialHandler->writeMessage((char*) msg_calibrate, 1);
     //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
-    usleep(2 * 1000 * 1000);
+    usleep(1 * 1000 * 1000);
     //serialHandler->readString();
     cerr << serialHandler->readString() << endl;
 
@@ -173,7 +173,7 @@ void MeasurementController::run()
 	    damageHandler->measure = false;
 	    udsHandler->measure = false;
 
-	    usleep(300000);
+	    usleep(150000);
 
 	    int input_latency = inputHandler->input_time - gpioHandler->click_time;
 	    int framework_latency = pixelReader->end_time - pixelReader->start_time;
@@ -251,7 +251,7 @@ void MeasurementController::run()
 
 	    if (iteration > ITERATIONS) break;
 
-	    usleep(200 * 1000);
+	    usleep(100 * 1000);
     }
 
     cleanup();
