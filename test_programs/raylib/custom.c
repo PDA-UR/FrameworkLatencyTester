@@ -39,9 +39,15 @@ int main(int argc, char** argv)
 		n_rects = atoi(argv[1]) - 1;
 	}
 
+	SetConfigFlags(FLAG_WINDOW_UNDECORATED);	
     InitWindow(WIDTH, HEIGHT, "raylib default");
 
-	ToggleFullscreen();
+    
+	int monitor = GetCurrentMonitor();
+	SetWindowSize(GetMonitorWidth(monitor), GetMonitorHeight(monitor));
+	SetWindowPosition(0, 0);
+
+	//ToggleFullscreen();
 
     Rectangle white_rect = { 0, 0, 300, HEIGHT };
 

@@ -96,6 +96,7 @@ print(rise, fall)
 #os.system(f'export BORDER_TOP={fall}')
 #os.system(f'export BORDER_BOTTOM={rise}')
 
+offsets['OFFSET'] = int(OFFSET)
 offsets['BORDER_TOP'] = int(fall)
 offsets['BORDER_BOTTOM'] = int(rise)
 

@@ -7,8 +7,10 @@ DATA_SUBDIRECTORY=$4
 
 PATH_TEST_PROGRAM="test_programs/$TEST_PROGRAM/bin/${TEST_PROGRAM}_custom ${TEST_PARAMS}"
 PATH_DATA="data/$DATA_SUBDIRECTORY/${TEST_PROGRAM}_${TEST_PARAMS}"
+INPUT_EVENT="/dev/input/event9"
 
 mkdir "data/$DATA_SUBDIRECTORY" 2> /dev/null
+mkdir "data/$DATA_SUBDIRECTORY/img" 2> /dev/null
 
 echo "starting $PATH_TEST_PROGRAM"
 
@@ -46,13 +48,21 @@ echo "$TEST_PROGRAM $TEST_PARAMS $WINID"
 
 sleep "1s"
 
-sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event10" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
+sudo -E ./latency_tester_parport/bin/latency_tester "${INPUT_EVENT}" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
 #sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event10" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS $WINID > "${PATH_DATA}.csv"
 #sudo ./latency_tester_parport/bin/latency_tester "/dev/input/event4" "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 29360135 > "${PATH_DATA}.csv"
 
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 1 "${PATH_DATA}_fw.csv"
 
 #python3 control_yalmd.py "${TEST_PROGRAM}_${TEST_PARAMS}" $ITERATIONS 0 "${PATH_DATA}_nofw.csv"
+
+# move tearing images to data dir
+for img in tearing_img_tmp/*.png; do
+	BASE_NAME=$(basename ${img})
+	#mv "$img" "data/$DATA_SUBDIRECTORY/img/${PATH_DATA}_${BASE_NAME}"
+	rm -f "data/$DATA_SUBDIRECTORY/img/${TEST_PROGRAM}_${TEST_PARAMS}_${BASE_NAME}"
+	mv "$img" "data/$DATA_SUBDIRECTORY/img/${TEST_PROGRAM}_${TEST_PARAMS}_${BASE_NAME}"
+done
 
 kill -9 $PID_TEST_PROGRAM
 

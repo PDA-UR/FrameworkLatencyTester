@@ -21,13 +21,14 @@ void createRects(sf::RectangleShape* rects)
 		
 		rects[i] = sf::RectangleShape(sf::Vector2f(rect_w, rect_h));
 		rects[i].setFillColor(sf::Color(r, g, b));
-		rects[i].setPosition(x, y);
+		rects[i].setPosition({x, y});
 	}
 }
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::Fullscreen);
+    //sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::Fullscreen);
+	sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::None);
 	sf::RectangleShape rects[n_rects];
 
     sf::RectangleShape whiteRect(sf::Vector2f(300, HEIGHT));
@@ -35,27 +36,28 @@ int main()
 
 	int clicked = 0;
 
-    while (window.isOpen())
-    {
-		sf::Event event;
-        while (window.pollEvent(event))
-        {
-			switch (event.type)
+	while (window.isOpen())
+	{
+		//sf::Event event;
+		while (const std::optional event = window.pollEvent())
+		{
+			if (event->is<sf::Event::Closed>())
 			{
-			case sf::Event::Closed:
-				  window.close();
-				  break;
-			case sf::Event::MouseButtonPressed:
-				  createRects(rects);
-				  clicked = 1;
-				  break;
-			case sf::Event::MouseButtonReleased:
-				  clicked = 0;
-				  break;
+				window.close();
 			}
-        }
+			else if (event->is<sf::Event::MouseButtonPressed>())
+			{
+				createRects(rects);
+				clicked = 1;
+			}
+			else if (event->is<sf::Event::MouseButtonReleased>())
+			{
 
-        window.clear();
+				clicked = 0;
+			}
+		}
+
+		window.clear();
 		if (clicked)
 		{
 			for (int i = 0; i < n_rects; i++)

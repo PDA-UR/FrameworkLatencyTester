@@ -67,9 +67,16 @@ public class lwjgl3_custom {
 		glfwDefaultWindowHints(); // optional, the current window hints are already the default
 		glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // the window will stay hidden after creation
 		glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE); // the window will be resizable
+		//glfwWindowHint(GLFW_REFRESH_RATE, GLFW_DONT_CARE); // use system refresh rate
+		glfwWindowHint(GLFW_DECORATED, GLFW_FALSE);
 
 		// Create the window
-		window = glfwCreateWindow(WIDTH, HEIGHT, "lwjgl3_custom", glfwGetPrimaryMonitor(), NULL);
+		//window = glfwCreateWindow(WIDTH, HEIGHT, "lwjgl3_custom", glfwGetPrimaryMonitor(), NULL);
+
+		// borderless fullscreen
+		window = glfwCreateWindow(WIDTH, HEIGHT, "lwjgl3_custom", NULL, NULL);
+		glfwSetWindowPos(window, WIDTH, 0);
+
 		if ( window == NULL )
 			throw new RuntimeException("Failed to create the GLFW window");
 

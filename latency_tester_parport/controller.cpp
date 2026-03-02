@@ -45,36 +45,38 @@ MeasurementController::MeasurementController(char *event_handle, int damage_win,
     //cout << "serial handler initialized" << endl;
 
     calibrate();
-    //cout << "calibration finished" << endl;
+    //cerr << "calibration finished" << endl;
 
     measuring = true;
 
     // fw tester
     // todo don't hard code position
     pixelReader = new XShmReader(200, 200);
-    //cout << "pixel reader initialized" << endl;
+    //cerr << "pixel reader initialized" << endl;
 
     inputHandler->register_callback(bind(&PixelReader::measure_fw_latency, pixelReader));
     //inputHandler.register_callback(&(pixelReader.measure_fw_latency));
-    //cout << "input handler callback registered" << endl;
+    //cerr << "input handler callback registered" << endl;
 
     // vblank
     vblankHandler = new VblankHandler();
-    //cout << "vblank handler initialized" << endl;
+    //cerr << "vblank handler initialized" << endl;
 
     // xdamage
     damageHandler = new DamageHandler(damage_win);
-    //cout << "damage handler initialized" << endl;
+    //cerr << "damage handler initialized" << endl;
 
     // run parallel port
     gpioHandler = new ParportHandler();
-    //cout << "gpio handler initialized" << endl;
+    //cerr << "gpio handler initialized" << endl;
 
     // camera handler
     cameraHandler = new CameraHandler();
+    //cerr << "camera handler initialized" << endl;
 
     // uds handler
     udsHandler = new UDSHandler(UDS_PATH);
+    //cerr << "uds handler initialized" << endl;
 }
 
 void MeasurementController::calibrate()
@@ -84,12 +86,14 @@ void MeasurementController::calibrate()
     usleep(500 * 1000);
     serialHandler->writeMessage((char*) msg_toggle, 1);
     usleep(500 * 1000);
+	//cerr << "calibration: clicked" << endl;
 
     serialHandler->writeMessage((char*) msg_calibrate, 1);
     //memset(&serial_read_buffer, '\0', sizeof(serial_read_buffer));
     usleep(1 * 1000 * 1000);
     //serialHandler->readString();
     cerr << serialHandler->readString() << endl;
+	//cerr << "calibration: read result" << endl;
 
     //cout << "read " << serial_read_num_bytes << " bytes from buffer" << endl;
     //cout << "calib: " << serial_read_buffer << endl;
@@ -110,6 +114,7 @@ void MeasurementController::calibrate()
     //usleep(10000);
     serialHandler->flush();
     usleep(10000);
+	//cerr << "calibration: done" << endl;
 
     //while(read(serial_port, &serial_read_buffer, sizeof(serial_read_buffer)) > 0)
     //{
@@ -120,6 +125,7 @@ void MeasurementController::calibrate()
 
 void MeasurementController::run()
 {
+	//cerr << "controller: run()" << endl;
     iteration = 0;
 
     usleep(100 * 1000);
@@ -131,6 +137,7 @@ void MeasurementController::run()
         inputHandler->reset();
         pixelReader->reset();
         gpioHandler->reset();
+	//cerr << "controller: all handlers reset" << endl;
 	    //click_time = 0;
 	    //pixelReader.start_time = 0;
 	    //pixelReader.end_time = 0;
@@ -148,6 +155,7 @@ void MeasurementController::run()
 
 	    gpioHandler->measure = true;
 	    serialHandler->writeMessage((char*) msg_measure, 1);
+	//cerr << "controller: send measure message" << endl;
 
 	    //cout << "measure" << endl;
 
@@ -157,10 +165,11 @@ void MeasurementController::run()
             // click
             // bright
             // bright_2
-            //cout << inputHandler->input_time << " - " << gpioHandler->click_time << " - " << pixelReader->end_time << " - " << gpioHandler->bright_time << " - " << gpioHandler->bright_time_2 << endl;
+            //cerr << inputHandler->input_time << " - " << gpioHandler->click_time << " - " << pixelReader->end_time << " - " << gpioHandler->bright_time << " - " << gpioHandler->bright_time_2 << endl;
 	    //usleep(100000);
 	    }
 
+	//cerr << "controller: measurement done" << endl;
 	    //cout << "after big while" << endl;
 
 	    //parport_active = 0;
@@ -189,6 +198,7 @@ void MeasurementController::run()
 	    //    tearing_offset = cameraHandler->runTearingDetection();
 	    //}
             tearing_offset = cameraHandler->runTearingDetection();
+	    cameraHandler->storeTearingData(iteration);
 
 	    //cout << "return from yalmd " << serial_read_buffer << endl;
 	    //cout << "click to bright1: " << (int)(bright_time - click_time) << endl;

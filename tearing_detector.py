@@ -20,6 +20,15 @@ OFFSET = 0
 BORDER_BOTTOM = 257
 BORDER_TOP = 3876
 
+try:
+    with open('offsets.conf', 'r') as f:
+        offset_data = f.read()
+    offsets = json.loads(offset_data)
+    BORDER_BOTTOM = int(offsets['BORDER_BOTTOM'])
+    BORDER_TOP = int(offsets['BORDER_TOP'])
+except:
+    pass
+
 IMAGE_PATH = 'screen_capture.png'
 SHOW_PLOT = False
 
@@ -46,7 +55,9 @@ filter = np.ones(filter_size) / filter_size
 line = np.convolve(line, filter)
 line = line[filter_size:-filter_size]
 
-#print(len(line))
+#print('line length:', len(line))
+#print(type(line))
+#print(list(line.astype(int)))
 
 deriv = []
 
@@ -80,6 +91,13 @@ try:
         print(0.0)
 except:
     print(0.0)
+
+#with open('tearing_capture_raw.dat', 'wb') as f:
+#    f.write(bytearray(list(line.astype(int))))
+
+cv2.imwrite('tearing_capture_line.png', cv2.transpose(line))
+#print(line.shape)
+#print(line.T.shape)
 
 
 """

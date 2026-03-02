@@ -5,36 +5,39 @@
 
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::Fullscreen);
+    //sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::Fullscreen);
+    //sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::None, sf::State::Fullscreen);
+    sf::RenderWindow window(sf::VideoMode({WIDTH, HEIGHT}), "SFML default", sf::Style::None);
     sf::RectangleShape rect(sf::Vector2f(WIDTH, HEIGHT));
     rect.setFillColor(sf::Color::White);
 
-	int clicked = 0;
+    int clicked = 0;
 
     while (window.isOpen())
     {
-		sf::Event event;
-        while (window.pollEvent(event))
-        {
-			switch (event.type)
-			{
-			case sf::Event::Closed:
-				  window.close();
-				  break;
-			case sf::Event::MouseButtonPressed:
-				  clicked = 1;
-				  break;
-			case sf::Event::MouseButtonReleased:
-				  clicked = 0;
-				  break;
-			}
-        }
+	    //sf::Event event;
+	    while (const std::optional event = window.pollEvent())
+	    {
+		    if (event->is<sf::Event::Closed>())
+		    {
+			    window.close();
+		    }
+		    else if (event->is<sf::Event::MouseButtonPressed>())
+		    {
+			    clicked = 1;
+		    }
+		    else if (event->is<sf::Event::MouseButtonReleased>())
+		    {
 
-        window.clear();
-		if (clicked)
-		{
-			window.draw(rect);
-		}
-        window.display();
+			    clicked = 0;
+		    }
+	    }
+
+	    window.clear();
+	    if (clicked)
+	    {
+		    window.draw(rect);
+	    }
+	    window.display();
     }
 }
